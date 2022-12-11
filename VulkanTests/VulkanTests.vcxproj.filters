@@ -28,6 +28,9 @@
     <ClCompile Include="first_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vt_pipeline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vt_window.hpp">
@@ -36,13 +39,15 @@
     <ClInclude Include="first_app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vt_pipeline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="simple_shader.vert">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="simple_shader.frag">
-      <Filter>Shader Files</Filter>
+    <None Include="shaders\simple_shader.frag" />
+    <None Include="shaders\simple_shader.vert" />
+    <None Include="compile.bat">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>

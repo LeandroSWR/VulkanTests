@@ -1,5 +1,8 @@
 #include "vt_window.hpp"
 
+// std
+#include <stdexcept>
+
 namespace vt
 {
 	// Class constructor that initializes the member variables with the given arguments
@@ -30,7 +33,10 @@ namespace vt
 		window = glfwCreateWindow(width, height, windowName.c_str(), nullptr, nullptr);
 	}
 
-	
+	void VtWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface)
+	{
+		if (glfwCreateWindowSurface(instance, window, nullptr, surface) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create window surface");
+		}
+	}
 }
-
-

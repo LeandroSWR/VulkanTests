@@ -2,6 +2,7 @@
 
 #include "vt_window.hpp"
 #include "vt_pipeline.hpp"
+#include "vt_device.hpp"
 
 namespace vt
 {
@@ -15,6 +16,11 @@ namespace vt
 
 	private:
 		VtWindow vtWindow{ WIDTH , HEIGHT, "Hello Vulkan!" };
-		VtPipeline vtPipeline{ "shaders/simple_shader.vert.spv", "shaders/simple_shader.frag.spv" };
+		VtDevice vtDevice{ vtWindow };
+		VtPipeline vtPipeline{ 
+			vtDevice, 
+			"shaders/simple_shader.vert.spv", 
+			"shaders/simple_shader.frag.spv", 
+			VtPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
 	};
 }

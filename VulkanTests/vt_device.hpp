@@ -6,15 +6,18 @@
 #include <string>
 #include <vector>
 
-namespace vt {
+namespace vt
+{
 
-    struct SwapChainSupportDetails {
+    struct SwapChainSupportDetails
+    {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    struct QueueFamilyIndices {
+    struct QueueFamilyIndices
+    {
         uint32_t graphicsFamily;
         uint32_t presentFamily;
         bool graphicsFamilyHasValue = false;
@@ -22,7 +25,8 @@ namespace vt {
         bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue; }
     };
 
-    class VtDevice {
+    class VtDevice
+    {
     public:
 #ifdef NDEBUG
         const bool enableValidationLayers = false;

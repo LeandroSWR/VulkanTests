@@ -43,7 +43,11 @@ namespace vt
 
 	void FirstApp::createPipeline()
 	{
-		auto pipelineConfig = VtPipeline::defaultPipelineConfigInfo(vtSwapChain.width(), vtSwapChain.height());
+		PipelineConfigInfo pipelineConfig{};
+		VtPipeline::defaultPipelineConfigInfo(
+			pipelineConfig,
+			vtSwapChain.width(),
+			vtSwapChain.height());
 		pipelineConfig.renderPass = vtSwapChain.getRenderPass();
 		pipelineConfig.pipelineLayout = pipelineLayout;
 		vtPipeline = std::make_unique<VtPipeline>(

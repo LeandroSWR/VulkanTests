@@ -3,6 +3,11 @@
 #include "vt_window.hpp"
 #include "vt_pipeline.hpp"
 #include "vt_device.hpp"
+#include "vt_swap_chain.hpp"
+
+// std
+#include <memory>
+#include <vector>
 
 namespace vt
 {
@@ -12,15 +17,25 @@ namespace vt
 		static constexpr int WIDTH = 800;
 		static constexpr int HEIGHT = 600;
 
+		FirstApp();
+		~FirstApp();
+
+		FirstApp(const FirstApp&) = delete;
+		FirstApp &operator=(const FirstApp&) = delete;
+
 		void run();
 
 	private:
+		void createPipelineLayout();
+		void createPipeline();
+		void createCommandBuffers();
+		void drawFrame();
+
 		VtWindow vtWindow{ WIDTH , HEIGHT, "Hello Vulkan!" };
 		VtDevice vtDevice{ vtWindow };
-		VtPipeline vtPipeline{ 
-			vtDevice, 
-			"shaders/simple_shader.vert.spv", 
-			"shaders/simple_shader.frag.spv", 
-			VtPipeline::defaultPipelineConfigInfo(WIDTH, HEIGHT)};
+		VtSwapChain vtSwapChain{ vtDevice , vtWindow.getExtent() };
+		std::unique_ptr<VtPipeline> vtPipeline;
+		VkPipelineLayout pipelineLayout;
+		std::vector<VkCommandBuffer> commandBuffers;
 	};
 }

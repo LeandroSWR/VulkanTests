@@ -4,6 +4,7 @@
 #include "vt_swap_chain.hpp"
 #include "vt_window.hpp"
 #include "vt_model.hpp"
+#include "vt_device.hpp"
 
 // std
 #include <memory>
@@ -14,8 +15,8 @@ namespace vt
 	class FirstApp
 	{
 	public:
-		static constexpr int WIDTH = 1280;
-		static constexpr int HEIGHT = 720;
+		static constexpr int WIDTH = 1024;
+		static constexpr int HEIGHT = 768;
 
 		FirstApp();
 		~FirstApp();

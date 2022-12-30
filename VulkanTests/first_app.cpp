@@ -33,9 +33,9 @@ namespace vt
 	void FirstApp::loadModels()
 	{
 		std::vector<VtModel::Vertex> vertices {
-			{{0.0f, -0.5f}},
-			{{0.5f, 0.5f}},
-			{{-0.5f, 0.5f}}
+			{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 		};
 
 		vtModel = std::make_unique<VtModel>(vtDevice, vertices);

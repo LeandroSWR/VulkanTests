@@ -70,6 +70,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CustomBuildBeforeTargets>Build</CustomBuildBeforeTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -114,6 +120,14 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.231.1\Lib;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv
+$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;%(Outputs)</Outputs>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,10 +149,19 @@
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.231.1\Lib;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv
+$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;%(Outputs)</Outputs>
+      <TreatOutputAsContent>false</TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="first_app.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="vt_model.cpp" />
     <ClCompile Include="vt_swap_chain.cpp" />
     <ClCompile Include="vt_device.cpp" />
     <ClCompile Include="vt_pipeline.cpp" />
@@ -146,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.hpp" />
+    <ClInclude Include="vt_model.hpp" />
     <ClInclude Include="vt_swap_chain.hpp" />
     <ClInclude Include="vt_device.hpp" />
     <ClInclude Include="vt_pipeline.hpp" />

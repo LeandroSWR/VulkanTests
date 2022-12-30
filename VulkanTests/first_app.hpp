@@ -1,9 +1,9 @@
 #pragma once
 
-#include "vt_window.hpp"
 #include "vt_pipeline.hpp"
-#include "vt_device.hpp"
 #include "vt_swap_chain.hpp"
+#include "vt_window.hpp"
+#include "vt_model.hpp"
 
 // std
 #include <memory>
@@ -14,8 +14,8 @@ namespace vt
 	class FirstApp
 	{
 	public:
-		static constexpr int WIDTH = 800;
-		static constexpr int HEIGHT = 600;
+		static constexpr int WIDTH = 1280;
+		static constexpr int HEIGHT = 720;
 
 		FirstApp();
 		~FirstApp();
@@ -26,6 +26,7 @@ namespace vt
 		void run();
 
 	private:
+		void loadModels();
 		void createPipelineLayout();
 		void createPipeline();
 		void createCommandBuffers();
@@ -37,5 +38,6 @@ namespace vt
 		std::unique_ptr<VtPipeline> vtPipeline;
 		VkPipelineLayout pipelineLayout;
 		std::vector<VkCommandBuffer> commandBuffers;
+		std::unique_ptr<VtModel> vtModel;
 	};
 }

@@ -8,6 +8,7 @@ namespace vt
 {
 	FirstApp::FirstApp()
 	{
+		loadModels();
 		createPipelineLayout();
 		createPipeline();
 		createCommandBuffers();
@@ -25,6 +26,19 @@ namespace vt
 			glfwPollEvents();
 			drawFrame();
 		}
+
+		vkDeviceWaitIdle(vtDevice.device());
+	}
+
+	void FirstApp::loadModels()
+	{
+		std::vector<VtModel::Vertex> vertices {
+			{{0.0f, -0.5f}},
+			{{0.5f, 0.5f}},
+			{{-0.5f, 0.5f}}
+		};
+
+		vtModel = std::make_unique<VtModel>(vtDevice, vertices);
 	}
 
 	void FirstApp::createPipelineLayout()
@@ -40,7 +54,6 @@ namespace vt
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
-
 
 	void FirstApp::createPipeline()
 	{
@@ -100,7 +113,8 @@ namespace vt
 			vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			vtPipeline->bind(commandBuffers[i]);
-			vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+			vtModel->bind(commandBuffers[i]);
+			vtModel->draw(commandBuffers[i]);
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 			if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS)

@@ -160,8 +160,12 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="first_app.cpp" />
+    <ClCompile Include="keyboard_movement_controller.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="simple_render_system.cpp" />
+    <ClCompile Include="vt_camera.cpp" />
     <ClCompile Include="vt_model.cpp" />
+    <ClCompile Include="vt_renderer.cpp" />
     <ClCompile Include="vt_swap_chain.cpp" />
     <ClCompile Include="vt_device.cpp" />
     <ClCompile Include="vt_pipeline.cpp" />
@@ -169,7 +173,12 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="first_app.hpp" />
+    <ClInclude Include="keyboard_movement_controller.hpp" />
+    <ClInclude Include="simple_render_system.hpp" />
+    <ClInclude Include="vt_camera.hpp" />
+    <ClInclude Include="vt_game_object.hpp" />
     <ClInclude Include="vt_model.hpp" />
+    <ClInclude Include="vt_renderer.hpp" />
     <ClInclude Include="vt_swap_chain.hpp" />
     <ClInclude Include="vt_device.hpp" />
     <ClInclude Include="vt_pipeline.hpp" />

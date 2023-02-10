@@ -1,10 +1,10 @@
 #pragma once
 
-#include "vt_pipeline.hpp"
-#include "vt_swap_chain.hpp"
-#include "vt_window.hpp"
-#include "vt_model.hpp"
 #include "vt_device.hpp"
+#include "vt_model.hpp"
+#include "vt_game_object.hpp"
+#include "vt_window.hpp"
+#include "vt_renderer.hpp"
 
 // std
 #include <memory>
@@ -27,21 +27,12 @@ namespace vt
 		void run();
 
 	private:
-		void loadModels();
-		void createPipelineLayout();
-		void createPipeline();
-		void createCommandBuffers();
-		void freeCommandBuffers();
-		void drawFrame();
-		void recreateSwapChain();
-		void recordCommandBuffer(int imageIndex);
+		void loadGameObjects();
 
 		VtWindow vtWindow{ WIDTH , HEIGHT, "Hello Vulkan!" };
 		VtDevice vtDevice{ vtWindow };
-		std::unique_ptr<VtSwapChain> vtSwapChain;
-		std::unique_ptr<VtPipeline> vtPipeline;
-		VkPipelineLayout pipelineLayout;
-		std::vector<VkCommandBuffer> commandBuffers;
-		std::unique_ptr<VtModel> vtModel;
+		VtRenderer vtRenderer{ vtWindow, vtDevice };
+
+		std::vector<VtGameObject> gameObjects;
 	};
 }

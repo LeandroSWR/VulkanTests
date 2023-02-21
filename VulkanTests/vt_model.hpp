@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 // std
+#include <memory>
 #include <vector>
 
 namespace vt {
@@ -14,8 +15,10 @@ namespace vt {
 	public:
 
 		struct Vertex {
-			glm::vec3 position;
-			glm::vec3 color;
+			glm::vec3 position{};
+			glm::vec3 color{};
+			glm::vec3 normal{};
+			glm::vec2 uv{};
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescriptions();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions();
@@ -24,6 +27,8 @@ namespace vt {
 		struct Builder {
 			std::vector<Vertex> vertices{};
 			std::vector<uint32_t> indices{};
+
+			void loadModel(const std::string& filepath);
 		};
 
 		VtModel(VtDevice &device, const VtModel::Builder &builder);
@@ -31,6 +36,8 @@ namespace vt {
 
 		VtModel(const VtModel&) = delete;
 		VtModel& operator=(const VtModel&) = delete;
+
+		static std::unique_ptr<VtModel> createModelFromFile(VtDevice& device, const std::string& filepath);
 
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer);

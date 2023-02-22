@@ -163,6 +163,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -
     <ClCompile Include="keyboard_movement_controller.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="simple_render_system.cpp" />
+    <ClCompile Include="vt_buffer.cpp" />
     <ClCompile Include="vt_camera.cpp" />
     <ClCompile Include="vt_game_object.cpp" />
     <ClCompile Include="vt_model.cpp" />
@@ -176,6 +177,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -
     <ClInclude Include="first_app.hpp" />
     <ClInclude Include="keyboard_movement_controller.hpp" />
     <ClInclude Include="simple_render_system.hpp" />
+    <ClInclude Include="vt_buffer.hpp" />
     <ClInclude Include="vt_camera.hpp" />
     <ClInclude Include="vt_game_object.hpp" />
     <ClInclude Include="vt_model.hpp" />

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vt_buffer.hpp"
 #include "vt_device.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -13,7 +14,6 @@
 namespace vt {
 	class VtModel {
 	public:
-
 		struct Vertex {
 			glm::vec3 position{};
 			glm::vec3 color{};
@@ -48,13 +48,11 @@ namespace vt {
 
 		VtDevice& vtDevice;
 
-		VkBuffer vertexBuffer;
-		VkDeviceMemory vertexBufferMemory;
+		std::unique_ptr<VtBuffer> vertexBuffer;
 		uint32_t vertexCount;
 
 		bool hasIndexBuffer = false;
-		VkBuffer indexBuffer;
-		VkDeviceMemory indexBufferMemory;
+		std::unique_ptr<VtBuffer> indexBuffer;
 		uint32_t indexCount;
 	};
 }

@@ -179,6 +179,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -
     <ClInclude Include="simple_render_system.hpp" />
     <ClInclude Include="vt_buffer.hpp" />
     <ClInclude Include="vt_camera.hpp" />
+    <ClInclude Include="vt_frame_info.hpp" />
     <ClInclude Include="vt_game_object.hpp" />
     <ClInclude Include="vt_model.hpp" />
     <ClInclude Include="vt_renderer.hpp" />

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vt_descriptors.hpp"
 #include "vt_device.hpp"
 #include "vt_model.hpp"
 #include "vt_game_object.hpp"
@@ -33,6 +34,8 @@ namespace vt
 		VtDevice vtDevice{ vtWindow };
 		VtRenderer vtRenderer{ vtWindow, vtDevice };
 
+		// Order of declarations matters! :(
+		std::unique_ptr<VtDescriptorPool> globalPool{};
 		std::vector<VtGameObject> gameObjects;
 	};
 }

@@ -24,6 +24,11 @@ namespace vt
 
 	FirstApp::FirstApp()
 	{
+		globalPool = VtDescriptorPool::Builder(vtDevice)
+			.setMaxSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VtSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.build();
+
 		loadGameObjects();
 	}
 
@@ -44,7 +49,20 @@ namespace vt
 			uboBuffers[i]->map();
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ vtDevice, vtRenderer.getSwapChainRenderPass() };
+		auto globalSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)
+			.build();
+
+		std::vector<VkDescriptorSet> globalDescriptorSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
+		for (int i = 0; i < globalDescriptorSets.size(); i++)
+		{
+			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			VtDescriptorWriter(*globalSetLayout, *globalPool)
+				.writeBuffer(0, &bufferInfo)
+				.build(globalDescriptorSets[i]);
+		}
+
+		SimpleRenderSystem simpleRenderSystem{ vtDevice, vtRenderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
         VtCamera camera{};
         camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
 
@@ -74,7 +92,8 @@ namespace vt
 					frameIndex,
 					frameTime,
 					commandBuffer,
-					camera
+					camera,
+					globalDescriptorSets[frameIndex]
 				};
 
 				// update

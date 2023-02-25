@@ -13,5 +13,6 @@ namespace vt
 		float frameTime;
 		VkCommandBuffer commandBuffer;
 		VtCamera& camera;
+		VkDescriptorSet globalDescriptorSet;
 	};
 }

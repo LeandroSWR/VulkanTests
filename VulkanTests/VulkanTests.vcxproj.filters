@@ -114,6 +114,5 @@
     </None>
     <None Include="shaders\simple_shader.frag.spv" />
     <None Include="shaders\simple_shader.vert.spv" />
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

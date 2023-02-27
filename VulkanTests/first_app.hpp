@@ -36,6 +36,6 @@ namespace vt
 
 		// Order of declarations matters! :(
 		std::unique_ptr<VtDescriptorPool> globalPool{};
-		std::vector<VtGameObject> gameObjects;
+		VtGameObject::Map gameObjects;
 	};
 }

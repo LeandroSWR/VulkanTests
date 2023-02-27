@@ -97,7 +97,8 @@ namespace vt
 					frameTime, 
 					commandBuffer,
 					camera,
-					globalDescriptorSets[frameIndex]
+					globalDescriptorSets[frameIndex],
+					gameObjects
 				};
 
 				// update
@@ -108,7 +109,7 @@ namespace vt
 
 				// render
 				vtRenderer.beginSwapChainRenderPass(commandBuffer);
-				simpleRenderSystem.renderGameObjects(frameInfo, gameObjects);
+				simpleRenderSystem.renderGameObjects(frameInfo);
 				vtRenderer.endSwapChainRenderPass(commandBuffer);
 				vtRenderer.endFrame();
 			}
@@ -125,20 +126,20 @@ namespace vt
 		flatVase.model = vtModel;
 		flatVase.transform.translation = { -.5f, .5f, 0.f };
 		flatVase.transform.scale = { 3.f, 1.5f, 3.f };
-        gameObjects.push_back(std::move(flatVase));
+        gameObjects.emplace(flatVase.getId(), std::move(flatVase));
 
 		vtModel = VtModel::createModelFromFile(vtDevice, "models/smooth_vase.obj");
 		auto smoothVase = VtGameObject::createGameObject();
 		smoothVase.model = vtModel;
 		smoothVase.transform.translation = { .5f, .5f, 0.f };
 		smoothVase.transform.scale = { 3.f, 1.5f, 3.f };
-		gameObjects.push_back(std::move(smoothVase));
+		gameObjects.emplace(smoothVase.getId(), std::move(smoothVase));
 
 		vtModel = VtModel::createModelFromFile(vtDevice, "models/quad.obj");
 		auto floor = VtGameObject::createGameObject();
 		floor.model = vtModel;
 		floor.transform.translation = { 0.f, .5f, 0.f };
 		floor.transform.scale = { 3.f, 1.f, 3.f };
-		gameObjects.push_back(std::move(floor));
+		gameObjects.emplace(floor.getId(), std::move(floor));
 	}
 }

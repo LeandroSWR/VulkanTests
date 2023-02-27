@@ -32,7 +32,7 @@ namespace vt
             {translation.x, translation.y, translation.z, 1.0f} };
     }
 
-    glm::mat3 TransformComponent::normalMatrix() 
+    glm::mat3 TransformComponent::normalMatrix()
     {
         const float c3 = glm::cos(rotation.z);
         const float s3 = glm::sin(rotation.z);
@@ -61,4 +61,13 @@ namespace vt
         };
     }
 
+    VtGameObject VtGameObject::makePointLight(float intensity, float radius, glm::vec3 color)
+    {
+        VtGameObject gameObj = VtGameObject::createGameObject();
+        gameObj.color = color;
+        gameObj.transform.scale.x = radius;
+        gameObj.pointLight = std::make_unique<PointLightComponent>();
+        gameObj.pointLight->lightIntensity = intensity;
+        return gameObj;
+    }
 }

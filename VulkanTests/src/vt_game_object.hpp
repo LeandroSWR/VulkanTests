@@ -22,6 +22,10 @@ namespace vt {
 		glm::mat3 normalMatrix();
 	};
 
+	struct PointLightComponent {
+		float lightIntensity = 1.0f;
+	};
+
 	class VtGameObject {
 	public:
 		using id_t = unsigned int;
@@ -32,6 +36,9 @@ namespace vt {
 			return VtGameObject{ currentId++ };
 		}
 
+		static VtGameObject makePointLight(
+			float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f));
+
 		VtGameObject(const VtGameObject&) = delete;
 		VtGameObject& operator=(const VtGameObject&) = delete;
 		VtGameObject(VtGameObject&&) = default;
@@ -39,9 +46,11 @@ namespace vt {
 
 		id_t getId() { return id; }
 
-		std::shared_ptr<VtModel> model{};
 		glm::vec3 color{};
 		TransformComponent transform{};
+
+		std::shared_ptr<VtModel> model{};
+		std::unique_ptr<PointLightComponent> pointLight = nullptr;
 
 	private:
 		VtGameObject(id_t objId) : id{ objId } {}

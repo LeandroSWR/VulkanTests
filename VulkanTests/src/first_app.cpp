@@ -2,9 +2,8 @@
 #include "keyboard_movement_controller.hpp"
 #include "vt_camera.hpp"
 #include "vt_buffer.hpp"
-#include "simple_render_system.hpp"
-#include "point_light_system.hpp"
-
+#include "systems/simple_render_system.hpp"
+#include "systems/point_light_system.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -109,6 +108,7 @@ namespace vt
 				GlobalUbo ubo{};
 				ubo.projection = camera.getProjection();
 				ubo.view = camera.getView();
+				pointLightSystem.update(frameInfo, ubo);
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 

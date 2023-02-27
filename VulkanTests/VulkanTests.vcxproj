@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -140,7 +140,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -167,9 +167,8 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     <ClCompile Include="src\first_app.cpp" />
     <ClCompile Include="src\keyboard_movement_controller.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\point_light_system.cpp" />
-    <ClCompile Include="src\simple_render_system.cpp" />
-    <ClCompile Include="src\simple_render_system.cpp" />
+    <ClCompile Include="src\systems\point_light_system.cpp" />
+    <ClCompile Include="src\systems\simple_render_system.cpp" />
     <ClCompile Include="src\vt_buffer.cpp" />
     <ClCompile Include="src\vt_camera.cpp" />
     <ClCompile Include="src\vt_descriptors.cpp" />
@@ -184,9 +183,8 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
   <ItemGroup>
     <ClInclude Include="src\first_app.hpp" />
     <ClInclude Include="src\keyboard_movement_controller.hpp" />
-    <ClInclude Include="src\point_light_system.hpp" />
-    <ClInclude Include="src\simple_render_system.hpp" />
-    <ClInclude Include="src\simple_render_system.hpp" />
+    <ClInclude Include="src\systems\point_light_system.hpp" />
+    <ClInclude Include="src\systems\simple_render_system.hpp" />
     <ClInclude Include="src\vt_buffer.hpp" />
     <ClInclude Include="src\vt_camera.hpp" />
     <ClInclude Include="src\vt_descriptors.hpp" />

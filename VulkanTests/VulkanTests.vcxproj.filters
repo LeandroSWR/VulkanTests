@@ -61,10 +61,10 @@
     <ClCompile Include="src\vt_descriptors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\simple_render_system.cpp">
+    <ClCompile Include="src\systems\simple_render_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\point_light_system.cpp">
+    <ClCompile Include="src\systems\point_light_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -111,10 +111,10 @@
     <ClInclude Include="src\vt_descriptors.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\simple_render_system.hpp">
+    <ClInclude Include="src\systems\simple_render_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\point_light_system.hpp">
+    <ClInclude Include="src\systems\point_light_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

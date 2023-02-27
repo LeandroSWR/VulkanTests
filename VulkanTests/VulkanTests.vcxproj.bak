@@ -123,12 +123,10 @@
     </Link>
     <CustomBuildStep>
       <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.vert -o $(MSBuildProjectDirectory)\shaders\point_light.vert.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o $(MSBuildProjectDirectory)\shaders\point_light.frag.spv</Command>
+$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;$(MSBuildProjectDirectory)\point_light.frag.spv;$(MSBuildProjectDirectory)\point_light.vert.spv;%(Outputs)</Outputs>
+      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;%(Outputs)</Outputs>
       <TreatOutputAsContent>false</TreatOutputAsContent>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -154,12 +152,10 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     </Link>
     <CustomBuildStep>
       <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.vert -o $(MSBuildProjectDirectory)\shaders\point_light.vert.spv
-$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o $(MSBuildProjectDirectory)\shaders\point_light.frag.spv</Command>
+$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.frag -o $(MSBuildProjectDirectory)\shaders\simple_shader.frag.spv</Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;$(MSBuildProjectDirectory)\point_light.frag.spv;$(MSBuildProjectDirectory)\point_light.vert.spv;%(Outputs)</Outputs>
+      <Outputs>$(MSBuildProjectDirectory)\simple_shader.frag.spv;$(MSBuildProjectDirectory)\simple_shader.vert.spv;%(Outputs)</Outputs>
       <TreatOutputAsContent>false</TreatOutputAsContent>
     </CustomBuildStep>
   </ItemDefinitionGroup>
@@ -167,8 +163,6 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     <ClCompile Include="src\first_app.cpp" />
     <ClCompile Include="src\keyboard_movement_controller.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\point_light_system.cpp" />
-    <ClCompile Include="src\simple_render_system.cpp" />
     <ClCompile Include="src\simple_render_system.cpp" />
     <ClCompile Include="src\vt_buffer.cpp" />
     <ClCompile Include="src\vt_camera.cpp" />
@@ -184,8 +178,6 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
   <ItemGroup>
     <ClInclude Include="src\first_app.hpp" />
     <ClInclude Include="src\keyboard_movement_controller.hpp" />
-    <ClInclude Include="src\point_light_system.hpp" />
-    <ClInclude Include="src\simple_render_system.hpp" />
     <ClInclude Include="src\simple_render_system.hpp" />
     <ClInclude Include="src\vt_buffer.hpp" />
     <ClInclude Include="src\vt_camera.hpp" />
@@ -201,8 +193,6 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
   </ItemGroup>
   <ItemGroup>
     <None Include="compile.bat" />
-    <None Include="shaders\point_light.frag" />
-    <None Include="shaders\point_light.vert" />
     <None Include="shaders\simple_shader.frag" />
     <None Include="shaders\simple_shader.frag.spv" />
     <None Include="shaders\simple_shader.vert" />
@@ -212,4 +202,11 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
 </Project>

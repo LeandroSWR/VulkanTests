@@ -1,8 +1,10 @@
 #include "first_app.hpp"
 #include "keyboard_movement_controller.hpp"
 #include "vt_camera.hpp"
-#include "simple_render_system.hpp"
 #include "vt_buffer.hpp"
+#include "simple_render_system.hpp"
+#include "point_light_system.hpp"
+
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -18,7 +20,8 @@
 namespace vt
 {
 	struct GlobalUbo {
-		glm::mat4 projectionView{ 1.f };
+		glm::mat4 projection{ 1.f };
+		glm::mat4 view{ 1.f };
 		glm::vec4 ambientLightColor{ 1.f, 1.f, 1.f, .02f };	// w is intensity
 		glm::vec3 lightPosition{ -1.f };
 		alignas(16) glm::vec4 lightColor{ 1.f }; // w is intensity
@@ -65,8 +68,18 @@ namespace vt
 				.build(globalDescriptorSets[i]);
 		}
 
-		SimpleRenderSystem simpleRenderSystem{ vtDevice, vtRenderer.getSwapChainRenderPass(), globalSetLayout->getDescriptorSetLayout()};
+		SimpleRenderSystem simpleRenderSystem{ 
+			vtDevice, 
+			vtRenderer.getSwapChainRenderPass(), 
+			globalSetLayout->getDescriptorSetLayout()
+		};
+		PointLightSystem pointLightSystem{
+			vtDevice,
+			vtRenderer.getSwapChainRenderPass(),
+			globalSetLayout->getDescriptorSetLayout()
+		};
         VtCamera camera{};
+
         camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
 
         auto viewerObject = VtGameObject::createGameObject();
@@ -103,13 +116,15 @@ namespace vt
 
 				// update
 				GlobalUbo ubo{};
-				ubo.projectionView = camera.getProjection() * camera.getView();
+				ubo.projection = camera.getProjection();
+				ubo.view = camera.getView();
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
 
 				// render
 				vtRenderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo);
+				pointLightSystem.render(frameInfo);
 				vtRenderer.endSwapChainRenderPass(commandBuffer);
 				vtRenderer.endFrame();
 			}

@@ -19,90 +19,102 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_window.cpp">
+    <ClCompile Include="src\vt_window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="first_app.cpp">
+    <ClCompile Include="src\first_app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_pipeline.cpp">
+    <ClCompile Include="src\vt_pipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_device.cpp">
+    <ClCompile Include="src\vt_device.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_swap_chain.cpp">
+    <ClCompile Include="src\vt_swap_chain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_model.cpp">
+    <ClCompile Include="src\vt_model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_renderer.cpp">
+    <ClCompile Include="src\vt_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="simple_render_system.cpp">
+    <ClCompile Include="src\simple_render_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_camera.cpp">
+    <ClCompile Include="src\vt_camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard_movement_controller.cpp">
+    <ClCompile Include="src\keyboard_movement_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_game_object.cpp">
+    <ClCompile Include="src\vt_game_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_buffer.cpp">
+    <ClCompile Include="src\vt_buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vt_descriptors.cpp">
+    <ClCompile Include="src\vt_descriptors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\simple_render_system.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\point_light_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vt_window.hpp">
+    <ClInclude Include="src\vt_window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="first_app.hpp">
+    <ClInclude Include="src\first_app.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_pipeline.hpp">
+    <ClInclude Include="src\vt_pipeline.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_device.hpp">
+    <ClInclude Include="src\vt_device.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_swap_chain.hpp">
+    <ClInclude Include="src\vt_swap_chain.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_model.hpp">
+    <ClInclude Include="src\vt_model.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_game_object.hpp">
+    <ClInclude Include="src\vt_game_object.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_renderer.hpp">
+    <ClInclude Include="src\vt_renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="simple_render_system.hpp">
+    <ClInclude Include="src\simple_render_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_camera.hpp">
+    <ClInclude Include="src\vt_camera.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="keyboard_movement_controller.hpp">
+    <ClInclude Include="src\keyboard_movement_controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_buffer.hpp">
+    <ClInclude Include="src\vt_buffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_frame_info.hpp">
+    <ClInclude Include="src\vt_frame_info.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vt_descriptors.hpp">
+    <ClInclude Include="src\vt_descriptors.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\simple_render_system.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\point_light_system.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -114,5 +126,7 @@
     </None>
     <None Include="shaders\simple_shader.frag.spv" />
     <None Include="shaders\simple_shader.vert.spv" />
+    <None Include="shaders\point_light.vert" />
+    <None Include="shaders\point_light.frag" />
   </ItemGroup>
 </Project>

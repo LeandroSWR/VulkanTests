@@ -111,7 +111,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sdk\STB;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -140,7 +140,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\sdk\STB;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests\VulkanTests\src;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glm;C:\Users\GamingMachine\Documents\Visual Studio 2022\Libraries\glfw-3.3.8.bin.WIN64\include;C:\local\assimp\include;C:\VulkanSDK\1.3.231.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -178,6 +178,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     <ClCompile Include="src\vt_swap_chain.cpp" />
     <ClCompile Include="src\vt_device.cpp" />
     <ClCompile Include="src\vt_pipeline.cpp" />
+    <ClCompile Include="src\vt_texture.cpp" />
     <ClCompile Include="src\vt_window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     <ClInclude Include="src\vt_swap_chain.hpp" />
     <ClInclude Include="src\vt_device.hpp" />
     <ClInclude Include="src\vt_pipeline.hpp" />
+    <ClInclude Include="src\vt_texture.hpp" />
     <ClInclude Include="src\vt_window.hpp" />
   </ItemGroup>
   <ItemGroup>

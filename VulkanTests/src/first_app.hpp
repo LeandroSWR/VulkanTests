@@ -6,6 +6,7 @@
 #include "vt_game_object.hpp"
 #include "vt_window.hpp"
 #include "vt_renderer.hpp"
+#include "vt_texture.hpp"
 
 // std
 #include <memory>
@@ -36,6 +37,7 @@ namespace vt
 
 		// Order of declarations matters! :(
 		std::unique_ptr<VtDescriptorPool> globalPool{};
+		std::unique_ptr<Texture> texture{};
 		VtGameObject::Map gameObjects;
 	};
 }

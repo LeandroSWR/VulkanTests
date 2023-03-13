@@ -23,6 +23,7 @@ namespace vt
 		globalPool = VtDescriptorPool::Builder(vtDevice)
 			.setMaxSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VtSwapChain::MAX_FRAMES_IN_FLIGHT)
+			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
 			.build();
 
 		loadGameObjects();
@@ -45,8 +46,22 @@ namespace vt
 			uboBuffers[i]->map();
 		}
 
+		texture = std::make_unique<Texture>(vtDevice, "textures/viking_room.png");
+
+		VkDescriptorImageInfo imageInfo = {};
+		imageInfo.sampler = texture->getSampler();
+		imageInfo.imageView = texture->getImageView();
+		imageInfo.imageLayout = texture->getImageLayout();
+
 		auto globalSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
+
+		auto materialSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -55,6 +70,7 @@ namespace vt
 			auto bufferInfo = uboBuffers[i]->descriptorInfo();
 			VtDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
+				.writeImage(1, &imageInfo)
 				.build(globalDescriptorSets[i]);
 		}
 
@@ -127,20 +143,14 @@ namespace vt
 
 	void FirstApp::loadGameObjects()
 	{
-        std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/flat_sphere.obj");
+        std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/viking_room.obj");
 
-        auto flatSphere = VtGameObject::createGameObject();
-		flatSphere.model = vtModel;
-		flatSphere.transform.translation = { -.5f, .5f, 0.f };
-		flatSphere.transform.scale = { 1.5f, 1.5f, 1.5f };
-        gameObjects.emplace(flatSphere.getId(), std::move(flatSphere));
-
-		vtModel = VtModel::createModelFromFile(vtDevice, "models/smooth_sphere.obj");
-		auto smoothSphere = VtGameObject::createGameObject();
-		smoothSphere.model = vtModel;
-		smoothSphere.transform.translation = { .5f, .5f, 0.f };
-		smoothSphere.transform.scale = { 1.5f, 1.5f, 1.5f };
-		gameObjects.emplace(smoothSphere.getId(), std::move(smoothSphere));
+        auto vikingRoom = VtGameObject::createGameObject();
+		vikingRoom.model = vtModel;
+		vikingRoom.transform.rotation = { 1.57f, 0.f, -1.57f };
+		vikingRoom.transform.translation = { .0f, 0.5f, 0.f };
+		vikingRoom.transform.scale = { 1.5f, 1.5f, 1.5f };
+        gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
 		vtModel = VtModel::createModelFromFile(vtDevice, "models/quad.obj");
 		auto floor = VtGameObject::createGameObject();

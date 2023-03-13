@@ -46,7 +46,7 @@ namespace vt
 			uboBuffers[i]->map();
 		}
 
-		texture = std::make_unique<Texture>(vtDevice, "textures/viking_room.png");
+		texture = std::make_unique<Texture>(vtDevice, "textures/viking_room_DIFFUSE.png");
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.sampler = texture->getSampler();

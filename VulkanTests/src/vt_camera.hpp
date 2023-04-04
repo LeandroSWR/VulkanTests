@@ -12,7 +12,7 @@ namespace vt
 	public:
 		void setOrthographicProjection(
 			float left, float right, float top, float bottom, float near, float far);
-		void setPerspectiveProjection(float fovy, float aspect, float near, float far);
+		void setPerspectiveProjection(float fovy, float width, float height, float near, float far);
 
 		void setViewDirection(
 			glm::vec3 position, glm::vec3 direction, glm::vec3 up = glm::vec3{ 0.f, -1.f, 0.f });

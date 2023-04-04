@@ -1,10 +1,15 @@
 #include "vt_game_object.hpp"
 
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
+
 namespace vt
 {
     glm::mat4 TransformComponent::mat4()
     {
-        const float c3 = glm::cos(rotation.z);
+        return glm::translate(translation) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z) * glm::scale(scale);
+
+        /*const float c3 = glm::cos(rotation.z);
         const float s3 = glm::sin(rotation.z);
         const float c2 = glm::cos(rotation.x);
         const float s2 = glm::sin(rotation.x);
@@ -29,7 +34,7 @@ namespace vt
                 scale.z * (c1 * c2),
                 0.0f,
             },
-            {translation.x, translation.y, translation.z, 1.0f} };
+            {translation.x, translation.y, translation.z, 1.0f} };*/
     }
 
     glm::mat3 TransformComponent::normalMatrix()

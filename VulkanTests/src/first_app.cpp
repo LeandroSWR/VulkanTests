@@ -46,22 +46,35 @@ namespace vt
 			uboBuffers[i]->map();
 		}
 
-		texture = std::make_unique<Texture>(vtDevice, "textures/viking_room_DIFFUSE.png");
+		texture = std::make_unique<Texture>(vtDevice, "textures/normal_cube_lambert1_BaseColor.png");
+		
 
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.sampler = texture->getSampler();
 		imageInfo.imageView = texture->getImageView();
 		imageInfo.imageLayout = texture->getImageLayout();
 
+		// Load the specular texture
+		auto specularTexture = std::make_unique<Texture>(vtDevice, "textures/normal_cube_lambert1_Metallic.png");
+
+		VkDescriptorImageInfo specularInfo = {};
+		specularInfo.sampler = specularTexture->getSampler();
+		specularInfo.imageView = specularTexture->getImageView();
+		specularInfo.imageLayout = specularTexture->getImageLayout();
+
+		// Load the normal texture
+		auto normalTexture = std::make_unique<Texture>(vtDevice, "textures/normal_cube_lambert1_Normal.png");
+
+		VkDescriptorImageInfo normalInfo = {};
+		normalInfo.sampler = normalTexture->getSampler();
+		normalInfo.imageView = normalTexture->getImageView();
+		normalInfo.imageLayout = normalTexture->getImageLayout();
+
 		auto globalSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.build();
-
-		auto materialSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
-			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -71,6 +84,8 @@ namespace vt
 			VtDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
 				.writeImage(1, &imageInfo)
+				.writeImage(2, &specularInfo)
+				.writeImage(3, &normalInfo)
 				.build(globalDescriptorSets[i]);
 		}
 
@@ -86,10 +101,11 @@ namespace vt
 		};
         VtCamera camera{};
 
-        camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
+        //camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
+		camera.setViewTarget(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f));
 
         auto viewerObject = VtGameObject::createGameObject();
-		viewerObject.transform.translation.z = -2.5f;
+		//viewerObject.transform.translation.z = -2.5f;
         KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -106,7 +122,7 @@ namespace vt
             camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
 
             float aspect = vtRenderer.getAspectRatio();
-            camera.setPerspectiveProjection(glm::radians(50.f), aspect, 0.1f, 1000.f);
+            camera.setPerspectiveProjection(glm::radians(50.f), WIDTH, HEIGHT, 0.1f, 1000.f);
 			
 			if (auto commandBuffer = vtRenderer.beginFrame())
 			{
@@ -143,16 +159,23 @@ namespace vt
 
 	void FirstApp::loadGameObjects()
 	{
-        std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/viking_room.obj");
+        //std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
 
-        auto vikingRoom = VtGameObject::createGameObject();
+        /*auto vikingRoom = VtGameObject::createGameObject();
 		vikingRoom.model = vtModel;
 		vikingRoom.transform.rotation = { 1.57f, 0.f, -1.57f };
 		vikingRoom.transform.translation = { .0f, 0.5f, 0.f };
 		vikingRoom.transform.scale = { 1.5f, 1.5f, 1.5f };
-        gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));
+        gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));*/
 
-		vtModel = VtModel::createModelFromFile(vtDevice, "models/quad.obj");
+		/*auto vikingRoom = VtGameObject::createGameObject();
+		vikingRoom.model = vtModel;
+		vikingRoom.transform.rotation = { 0.f, 0.f, 0.f };
+		vikingRoom.transform.translation = { .0f, 0.f, 0.f };
+		vikingRoom.transform.scale = { 0.01f, 0.01f, 0.01f };
+		gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));*/
+
+		std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/quad.obj");
 		auto floor = VtGameObject::createGameObject();
 		floor.model = vtModel;
 		floor.transform.translation = { 0.f, .5f, 0.f };
@@ -177,7 +200,7 @@ namespace vt
 				glm::mat4(1.f),
 				(i * glm::two_pi<float>()) / lightColors.size(),
 				{ 0.f, -1.f, 0.f });
-			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -1.f, -1.f, 1.f));
+			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -0.02f, -1.f, 1.f));
 			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 		}
 	}

@@ -1,5 +1,8 @@
 #include "vt_camera.hpp"
 
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
+
 // std
 #include <cassert>
 #include <limits>
@@ -18,21 +21,27 @@ namespace vt
 		projectionMatrix[3][2] = -near / (far - near);
 	}
 
-	void VtCamera::setPerspectiveProjection(float fovy, float aspect, float near, float far)
+	void VtCamera::setPerspectiveProjection(float fovy, float width, float height, float near, float far)
 	{
-		assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
-		const float tanHalfFovy = tan(fovy / 2.f);
+		//assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+
+		projectionMatrix = glm::perspectiveFov(fovy, width, height, near, far);
+
+		/*const float tanHalfFovy = tan(fovy / 2.f);
 		projectionMatrix = glm::mat4{ 0.0f };
 		projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
 		projectionMatrix[1][1] = 1.f / (tanHalfFovy);
 		projectionMatrix[2][2] = far / (far - near);
 		projectionMatrix[2][3] = 1.f;
-		projectionMatrix[3][2] = -(far * near) / (far - near);
+		projectionMatrix[3][2] = -(far * near) / (far - near);*/
 	}
 
 	void VtCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
 	{
-		const glm::vec3 w{ glm::normalize(direction) };
+		viewMatrix = glm::lookAtRH(position, direction, up);
+		inverseViewMatrix = glm::inverse(viewMatrix);
+
+		/*const glm::vec3 w{ glm::normalize(direction) };
 		const glm::vec3 u{ glm::normalize(glm::cross(w, up)) };
 		const glm::vec3 v{ glm::cross(w, u) };
 
@@ -62,7 +71,7 @@ namespace vt
 		inverseViewMatrix[2][2] = w.z;
 		inverseViewMatrix[3][0] = position.x;
 		inverseViewMatrix[3][1] = position.y;
-		inverseViewMatrix[3][2] = position.z;
+		inverseViewMatrix[3][2] = position.z;*/
 	}
 
 	void VtCamera::setViewTarget(glm::vec3 position, glm::vec3 target, glm::vec3 up)
@@ -72,7 +81,10 @@ namespace vt
 
 	void VtCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation)
 	{
-		const float c3 = glm::cos(rotation.z);
+		viewMatrix = glm::translate(position) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
+		inverseViewMatrix = glm::inverse(viewMatrix);
+
+		/*const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
 		const float c2 = glm::cos(rotation.x);
 		const float s2 = glm::sin(rotation.x);
@@ -107,6 +119,6 @@ namespace vt
 		inverseViewMatrix[2][2] = w.z;
 		inverseViewMatrix[3][0] = position.x;
 		inverseViewMatrix[3][1] = position.y;
-		inverseViewMatrix[3][2] = position.z;
+		inverseViewMatrix[3][2] = position.z;*/
 	}
 }

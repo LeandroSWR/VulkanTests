@@ -13,16 +13,15 @@ namespace vt
 		if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon())
 		{
 			gameObject.transform.rotation += lookSpeed * dt * glm::normalize(rotate);
+			// limit pitch values between about +/- 85ish degrees
+			gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
+			gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
 		}
 
-		// limit pitch values between about +/- 85ish degrees
-		gameObject.transform.rotation.x = glm::clamp(gameObject.transform.rotation.x, -1.5f, 1.5f);
-		gameObject.transform.rotation.y = glm::mod(gameObject.transform.rotation.y, glm::two_pi<float>());
-
-		float yaw = gameObject.transform.rotation.y;
-		const glm::vec3 forwardDir{ sin(yaw), 0.f, cos(yaw) };
-		const glm::vec3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
-		const glm::vec3 upDir{ 0.f, -1.f, 0.f };
+		glm::mat4 world_matrix = gameObject.transform.mat4();
+		glm::vec3 forwardDir = world_matrix * glm::vec4(0, 0, 1, 0); forwardDir.y = 0; forwardDir = glm::normalize(forwardDir);
+		glm::vec3 rightDir = world_matrix * glm::vec4(1, 0, 0, 0); rightDir.y = 0; rightDir = glm::normalize(rightDir);
+		glm::vec3 upDir{ 0.f, 1.f, 0.f };
 
 		glm::vec3 moveDir{ 0.f };
 		if (glfwGetKey(window, keys.moveForward) == GLFW_PRESS) moveDir += forwardDir;

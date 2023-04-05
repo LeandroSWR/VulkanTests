@@ -2,9 +2,8 @@
 #include "vt_device.hpp"
 #include "vt_buffer.hpp"
 
-#include <vulkan/vulkan_core.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <stb/stb_image.h>
 
 // std
 #include <stdexcept>
@@ -12,7 +11,6 @@
 
 vt::Texture::Texture(VtDevice& device, const std::string& path) : vtDevice(device)
 {
-    int channels;
     int m_BytesPerPixel;
 
     auto data = stbi_load(path.c_str(), &width, &height, &m_BytesPerPixel, 4);
@@ -168,7 +166,7 @@ void vt::Texture::generateMipmaps()
     int32_t mipWidth = width;
     int32_t mipHeight = height;
 
-    for (uint32_t i = 1; i < mipLevels; i++)
+    for (uint32_t i = 1; i < (uint32_t)mipLevels; i++)
     {
         barrier.subresourceRange.baseMipLevel = i - 1;
         barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;

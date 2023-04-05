@@ -1,7 +1,5 @@
 #include "vt_game_object.hpp"
-
-#include "glm/gtx/transform.hpp"
-#include "glm/gtx/euler_angles.hpp"
+#include "defs.h"
 
 namespace vt
 {

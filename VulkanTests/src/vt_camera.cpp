@@ -1,8 +1,5 @@
 #include "vt_camera.hpp"
 
-#include "glm/gtx/transform.hpp"
-#include "glm/gtx/euler_angles.hpp"
-
 // std
 #include <cassert>
 #include <limits>
@@ -26,6 +23,7 @@ namespace vt
 		//assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 
 		projectionMatrix = glm::perspectiveFov(fovy, width, height, near, far);
+		projectionMatrix[1][1] *= -1.0f;
 
 		/*const float tanHalfFovy = tan(fovy / 2.f);
 		projectionMatrix = glm::mat4{ 0.0f };
@@ -38,7 +36,7 @@ namespace vt
 
 	void VtCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
 	{
-		viewMatrix = glm::lookAtRH(position, direction, up);
+		viewMatrix = glm::lookAtLH(position, glm::normalize(direction), glm::normalize(up));
 		inverseViewMatrix = glm::inverse(viewMatrix);
 
 		/*const glm::vec3 w{ glm::normalize(direction) };
@@ -81,8 +79,8 @@ namespace vt
 
 	void VtCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation)
 	{
-		viewMatrix = glm::translate(position) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
-		inverseViewMatrix = glm::inverse(viewMatrix);
+		inverseViewMatrix = glm::translate(position) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
+		viewMatrix= glm::inverse(inverseViewMatrix);
 
 		/*const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -121,4 +119,11 @@ namespace vt
 		inverseViewMatrix[3][1] = position.y;
 		inverseViewMatrix[3][2] = position.z;*/
 	}
+
+	void VtCamera::setView(const glm::mat4& world_matrix)
+	{
+		inverseViewMatrix = world_matrix;
+		viewMatrix = glm::inverse(inverseViewMatrix);
+	}
+
 }

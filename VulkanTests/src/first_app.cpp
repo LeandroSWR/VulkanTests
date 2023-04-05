@@ -6,10 +6,7 @@
 #include "systems/point_light_system.hpp"
 
 // libs
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
+#include "defs.h"
 
 // std
 #include <array>
@@ -105,7 +102,7 @@ namespace vt
 		camera.setViewTarget(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f));
 
         auto viewerObject = VtGameObject::createGameObject();
-		//viewerObject.transform.translation.z = -2.5f;
+		viewerObject.transform.translation.z = -2.5f;
         KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -119,7 +116,8 @@ namespace vt
             currentTime = newTime;
 
             cameraController.moveInPlaneXZ(vtWindow.getGLFWwindow(), frameTime, viewerObject);
-            camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+            //camera.setViewYXZ(viewerObject.transform.translation, viewerObject.transform.rotation);
+			camera.setView(viewerObject.transform.mat4());
 
             float aspect = vtRenderer.getAspectRatio();
             camera.setPerspectiveProjection(glm::radians(50.f), WIDTH, HEIGHT, 0.1f, 1000.f);
@@ -159,7 +157,7 @@ namespace vt
 
 	void FirstApp::loadGameObjects()
 	{
-        //std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
+        std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
 
         /*auto vikingRoom = VtGameObject::createGameObject();
 		vikingRoom.model = vtModel;
@@ -168,19 +166,34 @@ namespace vt
 		vikingRoom.transform.scale = { 1.5f, 1.5f, 1.5f };
         gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));*/
 
-		/*auto vikingRoom = VtGameObject::createGameObject();
+		auto vikingRoom = VtGameObject::createGameObject();
 		vikingRoom.model = vtModel;
 		vikingRoom.transform.rotation = { 0.f, 0.f, 0.f };
 		vikingRoom.transform.translation = { .0f, 0.f, 0.f };
 		vikingRoom.transform.scale = { 0.01f, 0.01f, 0.01f };
-		gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));*/
+		gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));
 
-		std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/quad.obj");
+		vtModel = VtModel::createModelFromFile(vtDevice, "models/plane.obj");
 		auto floor = VtGameObject::createGameObject();
 		floor.model = vtModel;
-		floor.transform.translation = { 0.f, .5f, 0.f };
+		floor.transform.translation = { 0.f, -.5f, 0.f };
 		floor.transform.scale = { 3.f, 1.f, 3.f };
 		gameObjects.emplace(floor.getId(), std::move(floor));
+
+		auto floor2 = VtGameObject::createGameObject();
+		floor2.model = vtModel;
+		floor2.transform.translation = { 0.f, 0.f, 1.5f };
+		floor2.transform.rotation = { glm::radians(-90.f), .0f, 0.f };
+		floor2.transform.scale = { 3.f, 1.f, 3.f };
+		gameObjects.emplace(floor2.getId(), std::move(floor2));
+
+
+		/*vtModel = VtModel::createModelFromFile(vtDevice, "models/cube.obj");
+		auto pyramid = VtGameObject::createGameObject();
+		pyramid.model = vtModel;
+		pyramid.transform.translation = { 0.f, 0.f, 0.f };
+		pyramid.transform.scale = { 1.f, 1.f, 1.f };
+		gameObjects.emplace(pyramid.getId(), std::move(pyramid));//*/
 
 		// Point Lights!
 		std::vector<glm::vec3> lightColors{

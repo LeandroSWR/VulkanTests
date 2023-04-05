@@ -2,11 +2,8 @@
 #include <cassert>
 #include <stdexcept>
 #include <gl/GL.h>
-#include <glm/glm.hpp>
 #include <iostream>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+#include "defs.h"
 #include <format>
 
 namespace vt {

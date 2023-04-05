@@ -3,7 +3,7 @@
 #include "vt_device.hpp"
 
 // vulkan headers
-#include <vulkan/vulkan.h>
+#include "defs.h"
 
 // std lib headers
 #include <memory>

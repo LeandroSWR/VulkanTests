@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mikktspace.h"
+#include "mikktspace/mikktspace.h"
 #include <vt_model.hpp>
 
 #define CALC_TANGENTS_DEBUG 0

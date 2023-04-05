@@ -1,9 +1,7 @@
 #pragma once
 
 // libs
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
+#include <defs.h>
 
 namespace vt
 {
@@ -23,6 +21,8 @@ namespace vt
 		const glm::mat4& getInverseView() const { return inverseViewMatrix; }
 		const glm::mat4& getProjection() const { return projectionMatrix; }
 		const glm::mat4& getView() const { return viewMatrix; }
+
+		void setView(const glm::mat4& world_matrix);
 
 	private:
 		glm::mat4 projectionMatrix{ 1.f };

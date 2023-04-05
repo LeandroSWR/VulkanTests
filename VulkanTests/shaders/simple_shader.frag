@@ -48,7 +48,7 @@ void main()
 	vec3 specularLight = vec3(0.0);
 	vec3 specularColor = texture(specular, fragUV).rgb;
 
-	vec3 normalMapValue = vec3(0, 0, 1);// texture(normal, fragUV).rgb;
+	vec3 normalMapValue = texture(normal, fragUV).rgb;
 	normalMapValue = normalize(2.0 * normalMapValue - 1.0);
 
 	vec3 tangent = normalize(fragTangent.xyz);
@@ -74,7 +74,7 @@ void main()
 		vec3 intensity = light.color.xyz * light.color.w * attenuation;
 		diffuseLight += intensity * cosAngIncidence;
 
-		// copute specular lighting :)
+		// compute specular lighting :)
 		vec3 halfAngle = normalize(directionToLight + viewDirection);
 		float blinnTerm = dot(surfaceNormal, halfAngle);
 		blinnTerm = clamp(blinnTerm, 0, 1);
@@ -84,5 +84,5 @@ void main()
 
 	vec3 imageColor = texture(image, fragUV).rgb;
 
-	outColor = vec4(surfaceNormal * 0.5 + 0.5, 1.0); // vec4(diffuseLight * imageColor + specularLight * imageColor, 1.0); ////
+	outColor = vec4(diffuseLight * imageColor + specularLight * imageColor, 1.0); ////
 }

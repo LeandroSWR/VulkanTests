@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vt_device.hpp>
-#include <vulkan/vulkan_core.h>
 
 // std
 #include <string.h>

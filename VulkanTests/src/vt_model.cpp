@@ -2,11 +2,7 @@
 #include "calc_tangents.hpp"
 
 //libs
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+#include "defs.h"
 
 // std
 #include <cassert>

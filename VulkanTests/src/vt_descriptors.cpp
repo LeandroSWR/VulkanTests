@@ -216,7 +216,7 @@ namespace vt
         {
             write.dstSet = set;
         }
-        vkUpdateDescriptorSets(pool.vtDevice.device(), writes.size(), writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(pool.vtDevice.device(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
 
 }

@@ -36,11 +36,10 @@ layout (push_constant) uniform Push {
 void main() {
 	vec4 positionWorld = push.modelMatrix * vec4(position, 1.0);
 
-	gl_Position = (ubo.projection * ubo.view) * positionWorld;
+	gl_Position = ubo.projection * ubo.view * positionWorld;
 
+	// 
 	mat3 m3_model = mat3(push.modelMatrix);
-
-	// Set the TBN matrix in world space
 	fragNormalWorld = m3_model * normal;
 	fragTangent = vec4(m3_model * tangent.xyz, tangent.w);
 

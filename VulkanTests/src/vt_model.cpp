@@ -1,12 +1,15 @@
 #include "vt_model.hpp"
 #include "calc_tangents.hpp"
 
-//libs
-#include <glm/glm.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define STBI_MSC_SECURE_CRT
+#include <tiny_gltf.h>
 
 // std
 #include <cassert>
@@ -14,29 +17,237 @@
 #include <iostream>
 #include <vector>
 
-namespace vt {
-	VtModel::VtModel(VtDevice& device, const VtModel::Builder & builder) : vtDevice{device}
+namespace vt
+{
+	/*VtModel::VtModel(VtDevice& device, const VtModel::Builder& builder) : vtDevice{ device }
 	{
 		createVertexBuffer(builder.vertices);
 		createIndexBuffer(builder.indices);
+	}*/
+
+	//std::unique_ptr<VtModel> VtModel::createModelFromFile(VtDevice& device, const std::string& filepath)
+	//{
+	//	Builder builder{};
+	//	builder.loadModel(filepath);
+	//	// Calculate tangents HERE!
+	//	CalcTangents tangents{};
+	//	tangents.calc(&builder);
+
+	//	return std::make_unique<VtModel>(device, builder);
+	//}
+
+	VtModel::VtModel(VtDevice& device, const std::string& filepath, VtDescriptorSetLayout &materialSetLayout, VtDescriptorPool &descriptorPool) : vtDevice{ device }
+	{
+		std::string warn, err;
+		tinygltf::TinyGLTF GltfLoader;
+		tinygltf::Model GltfModel;
+		if (!GltfLoader.LoadASCIIFromFile(&GltfModel, &err, &warn, filepath))
+		{
+			throw std::runtime_error("failed to load gltf file!");
+		}
+
+		auto path = std::filesystem::path{ filepath };
+
+		for (auto& image : GltfModel.images)
+		{
+			images.push_back(std::make_shared<Texture>(device, path.parent_path().append(image.uri).generic_string()));
+		}
+
+		for (auto& scene : GltfModel.scenes)
+		{
+			for (size_t i = 0; i < scene.nodes.size(); i++)
+			{
+				auto& node = GltfModel.nodes[i];
+				uint32_t vertexOffset = 0;
+				uint32_t indexOffset = 0;
+
+				for (auto& GltfPrimitive : GltfModel.meshes[node.mesh].primitives)
+				{
+					uint32_t vertexCount = 0;
+					uint32_t indexCount = 0;
+
+					const float* positionBuffer = nullptr;
+					const float* normalsBuffer = nullptr;
+					const float* texCoordsBuffer = nullptr;
+					const float* tangentsBuffer = nullptr;
+
+
+					if (GltfPrimitive.attributes.find("POSITION") != GltfPrimitive.attributes.end())
+					{
+						const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("POSITION")->second];
+						const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+						positionBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+						vertexCount = accessor.count;
+					}
+
+					if (GltfPrimitive.attributes.find("NORMAL") != GltfPrimitive.attributes.end())
+					{
+						const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("NORMAL")->second];
+						const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+						normalsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+					}
+
+					if (GltfPrimitive.attributes.find("TEXCOORD_0") != GltfPrimitive.attributes.end())
+					{
+						const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("TEXCOORD_0")->second];
+						const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+						texCoordsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+					}
+
+					if (GltfPrimitive.attributes.find("TANGENT") != GltfPrimitive.attributes.end())
+					{
+						const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("TANGENT")->second];
+						const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+						tangentsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+					}
+
+					for (size_t v = 0; v < vertexCount; v++)
+					{
+						Vertex vertex{};
+						vertex.position = glm::make_vec3(&positionBuffer[v * 3]);
+						vertex.color = glm::vec3(1.0);
+						vertex.normal = glm::normalize(
+							glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+						vertex.tangent = glm::vec4(
+							tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));;
+						vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
+						vertices.push_back(vertex);
+					}
+
+					{
+						const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.indices];
+						const tinygltf::BufferView& bufferView = GltfModel.bufferViews[accessor.bufferView];
+						const tinygltf::Buffer& buffer = GltfModel.buffers[bufferView.buffer];
+
+						indexCount += static_cast<uint32_t>(accessor.count);
+
+						switch (accessor.componentType)
+						{
+						case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
+						{
+							const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+							for (size_t index = 0; index < accessor.count; index++)
+							{
+								indices.push_back(buf[index]);
+							}
+							break;
+						}
+						case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+						{
+							const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+							for (size_t index = 0; index < accessor.count; index++)
+							{
+								indices.push_back(buf[index]);
+							}
+							break;
+						}
+						case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
+						{
+							const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+							for (size_t index = 0; index < accessor.count; index++)
+							{
+								indices.push_back(buf[index]);
+							}
+							break;
+						}
+						default:
+							std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+							return;
+						}
+					}
+
+					std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");
+
+					Material material{};
+					if (GltfPrimitive.material != -1)
+					{
+						tinygltf::Material& GltfPrimitiveMaterial = GltfModel.materials[GltfPrimitive.material];
+
+						if (GltfPrimitiveMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+						{
+							uint32_t textureIndex = GltfPrimitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;
+							uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+							material.albedoTexture = images[imageIndex];
+						}
+						else
+						{
+							material.albedoTexture = defaultTexture;
+						}
+
+						if (GltfPrimitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
+						{
+							uint32_t textureIndex = GltfPrimitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
+							uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+							material.metallicRoughnessTexture = images[imageIndex];
+						}
+						else
+						{
+							material.metallicRoughnessTexture = defaultTexture;
+						}
+
+						if (GltfPrimitiveMaterial.normalTexture.index != -1)
+						{
+							uint32_t textureIndex = GltfPrimitiveMaterial.normalTexture.index;
+							uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+							material.normalTexture = images[imageIndex];
+						}
+						else
+						{
+							material.normalTexture = defaultTexture;
+						}
+					}
+					else
+					{
+						material.albedoTexture = defaultTexture;
+						material.normalTexture = defaultTexture;
+						material.metallicRoughnessTexture = defaultTexture;
+					}
+
+					VkDescriptorImageInfo albedo_info = {};
+					albedo_info.sampler = material.albedoTexture->getSampler();
+					albedo_info.imageView = material.albedoTexture->getImageView();
+					albedo_info.imageLayout = material.albedoTexture->getImageLayout();
+
+					VkDescriptorImageInfo normal_info = {};
+					normal_info.sampler = material.normalTexture->getSampler();
+					normal_info.imageView = material.normalTexture->getImageView();
+					normal_info.imageLayout = material.normalTexture->getImageLayout();
+
+					VkDescriptorImageInfo metallicRoughness_info = {};
+					metallicRoughness_info.sampler = material.metallicRoughnessTexture->getSampler();
+					metallicRoughness_info.imageView = material.metallicRoughnessTexture->getImageView();
+					metallicRoughness_info.imageLayout = material.metallicRoughnessTexture->getImageLayout();
+
+
+					VtDescriptorWriter(materialSetLayout, descriptorPool)
+						.writeImage(0, &albedo_info)
+						.writeImage(1, &normal_info)
+						.writeImage(2, &metallicRoughness_info)
+						.build(material.descriptorSet);
+
+					Primitive primitive{};
+					primitive.firstVertex = vertexOffset;
+					primitive.vertexCount = vertexCount;
+					primitive.indexCount = indexCount;
+					primitive.firstIndex = indexOffset;
+					primitive.material = material;
+					primitives.push_back(primitive);
+
+					vertexOffset += vertexCount;
+					indexOffset += indexCount;
+				}
+			}
+
+			createVertexBuffers(vertices);
+			createIndexBuffers(indices);
+		}
 	}
 
 	VtModel::~VtModel() {}
 
-	std::unique_ptr<VtModel> VtModel::createModelFromFile(VtDevice& device, const std::string& filepath)
+	void VtModel::createVertexBuffers(const std::vector<Vertex>& vertices)
 	{
-		Builder builder{};
-		builder.loadModel(filepath);
-		// Calculate tangents HERE!
-		CalcTangents tangents{};
-		tangents.calc(&builder);
-
-		return std::make_unique<VtModel>(device, builder);
-	}
-
-	void VtModel::createVertexBuffer(const std::vector<Vertex>& vertices)
-	{
-		vertexCount = static_cast<uint32_t>(vertices.size());
+		uint32_t vertexCount = static_cast<uint32_t>(vertices.size());
 		assert(vertexCount >= 3 && "Vertex count must be at least 3.");
 		VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
 		uint32_t vertexSize = sizeof(vertices[0]);
@@ -50,7 +261,7 @@ namespace vt {
 		};
 
 		stagingBuffer.map();
-		stagingBuffer.writeToBuffer((void *)vertices.data());
+		stagingBuffer.writeToBuffer((void*)vertices.data());
 
 		vertexBuffer = std::make_unique<VtBuffer>(
 			vtDevice,
@@ -58,14 +269,14 @@ namespace vt {
 			vertexCount,
 			VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
+			);
 
 		vtDevice.copyBuffer(stagingBuffer.getBuffer(), vertexBuffer->getBuffer(), bufferSize);
 	}
 
-	void VtModel::createIndexBuffer(const std::vector<uint32_t>& indices)
+	void VtModel::createIndexBuffers(const std::vector<uint32_t>& indices)
 	{
-		indexCount = static_cast<uint32_t>(indices.size());
+		uint32_t indexCount = static_cast<uint32_t>(indices.size());
 		hasIndexBuffer = indexCount > 0;
 
 		if (!hasIndexBuffer)
@@ -91,20 +302,26 @@ namespace vt {
 			indexCount,
 			VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-		);
+			);
 
 		vtDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
 	}
 
-	void VtModel::draw(VkCommandBuffer commandBuffer)
+	void VtModel::draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout)
 	{
-		if (hasIndexBuffer)
+		for (auto& primitive : primitives)
 		{
-			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
-		}
-		else
-		{
-			vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+			if (hasIndexBuffer)
+			{
+				std::vector<VkDescriptorSet> sets{ globalDescriptorSet, primitive.material.descriptorSet };
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+					sets.size(), sets.data(), 0, nullptr);
+				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
+			}
+			else
+			{
+				vkCmdDraw(commandBuffer, primitive.vertexCount, 1, 0, 0);
+			}
 		}
 	}
 
@@ -144,68 +361,70 @@ namespace vt {
 		return attributeDescriptions;
 	}
 
-void VtModel::Builder::loadModel(const std::string& filepath)
-{
-	//// Load the mesh
-	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
+	//void VtModel::Builder::loadModel(const std::string& filepath)
+	//{
+	//	//// Load the mesh
+	//	Assimp::Importer importer;
+	//	const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_JoinIdenticalVertices);
 
-	// Check if any meshes where loaded
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
-	{
-		throw std::runtime_error("Unable to load file.");
-	}
+	//	// Check if any meshes where loaded
+	//	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	//	{
+	//		throw std::runtime_error("Unable to load file.");
+	//	}
 
-	const aiMesh* mesh = scene->mMeshes[0];
+	//	const aiMesh* mesh = scene->mMeshes[0];
 
-	// process vertices
-	for (size_t i = 0; i < mesh->mNumVertices; i++)
-	{
-		Vertex vertex{};
+	//	// process vertices
+	//	for (size_t i = 0; i < mesh->mNumVertices; i++)
+	//	{
+	//		Vertex vertex{};
 
-		aiVector3D vert = mesh->mVertices[i];
-		vertex.position = glm::vec3(vert.x, vert.y, vert.z);
+	//		aiVector3D vert = mesh->mVertices[i];
+	//		vertex.position = glm::vec3(vert.x, vert.y, vert.z);
 
-		aiVector3D norm = mesh->mNormals[i];
-		vertex.normal = glm::vec3(norm.x, norm.y, norm.z);
+	//		aiVector3D norm = mesh->mNormals[i];
+	//		vertex.normal = glm::vec3(norm.x, norm.y, norm.z);
 
-		if (mesh->mTextureCoords[0])
-		{
-			vertex.uv = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-		}
-		else
-		{
-			vertex.uv = glm::vec2(0.0f, 0.0f);
-		}
+	//		if (mesh->mTextureCoords[0])
+	//		{
+	//			vertex.uv = glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+	//		}
+	//		else
+	//		{
+	//			vertex.uv = glm::vec2(0.0f, 0.0f);
+	//		}
 
-		// process vertex colors if they exist
-		for (int j = 0; j < AI_MAX_NUMBER_OF_COLOR_SETS; j++) {
-			if (mesh->HasVertexColors(j)) {
-				vertex.color.r = mesh->mColors[j][i].r;
-				vertex.color.g = mesh->mColors[j][i].g;
-				vertex.color.b = mesh->mColors[j][i].b;
-				break;
-			}
-			else 
-			{
-				vertex.color = { 1.f, 1.f, 1.f };
-			}
-		}
+	//		// process vertex colors if they exist
+	//		for (int j = 0; j < AI_MAX_NUMBER_OF_COLOR_SETS; j++)
+	//		{
+	//			if (mesh->HasVertexColors(j))
+	//			{
+	//				vertex.color.r = mesh->mColors[j][i].r;
+	//				vertex.color.g = mesh->mColors[j][i].g;
+	//				vertex.color.b = mesh->mColors[j][i].b;
+	//				break;
+	//			}
+	//			else
+	//			{
+	//				vertex.color = { 1.f, 1.f, 1.f };
+	//			}
+	//		}
 
-		vertices.push_back(vertex);
+	//		vertices.push_back(vertex);
 
-		
-	}
 
-	// process indices
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-	{
-		aiFace face = mesh->mFaces[i];
+	//	}
 
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
-		{
-			indices.push_back(face.mIndices[j]);
-		}
-	}
-}
+	//	// process indices
+	//	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	//	{
+	//		aiFace face = mesh->mFaces[i];
+
+	//		for (unsigned int j = 0; j < face.mNumIndices; j++)
+	//		{
+	//			indices.push_back(face.mIndices[j]);
+	//		}
+	//	}
+	//}
 }

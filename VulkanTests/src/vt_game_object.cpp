@@ -1,13 +1,11 @@
 #include "vt_game_object.hpp"
 
-#include "glm/gtx/transform.hpp"
-#include "glm/gtx/euler_angles.hpp"
-
 namespace vt
 {
     glm::mat4 TransformComponent::mat4()
     {
-        return glm::translate(translation) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z) * glm::scale(scale);
+        //return glm::translate(translation) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z) * glm::scale(scale);
+        return glm::scale(scale) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z) * glm::translate(translation);
 
         /*const float c3 = glm::cos(rotation.z);
         const float s3 = glm::sin(rotation.z);

@@ -7,8 +7,10 @@
 #include <glm/gtc/constants.hpp>
 
 // std
-#include <stdexcept>
 #include <array>
+#include <cassert>
+#include <map>
+#include <stdexcept>
 
 namespace vt
 {

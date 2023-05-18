@@ -3,9 +3,6 @@
 #include "vt_camera.hpp"
 #include "vt_game_object.hpp"
 
-// lib
-#include <vulkan/vulkan.h>
-
 namespace vt 
 {
 #define MAX_LIGHTS 10

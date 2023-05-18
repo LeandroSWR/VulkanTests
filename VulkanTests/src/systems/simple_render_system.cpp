@@ -7,21 +7,22 @@
 #include <glm/gtc/constants.hpp>
 
 // std
-#include <stdexcept>
 #include <array>
+#include <cassert>
+#include <stdexcept>
 
 namespace vt
 {
 
 	struct SimplePushConstantData
 	{
-		glm::mat4 modelMatrix{ 1.f };
-		glm::mat4 normalMatrix{ 1.f };
+		glm::mat4 modelMatrix{ 1.0f };
+		glm::mat4 normalMatrix{ 1.0f };
 	};
 
-	SimpleRenderSystem::SimpleRenderSystem(VtDevice& device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout) : vtDevice{device}
+	SimpleRenderSystem::SimpleRenderSystem(VtDevice& device, VkRenderPass renderPass, std::vector<VkDescriptorSetLayout> setLayouts) : vtDevice{device}
 	{
-		createPipelineLayout(globalSetLayout);
+		createPipelineLayout(setLayouts);
 		createPipeline(renderPass);
 	}
 
@@ -30,19 +31,17 @@ namespace vt
 		vkDestroyPipelineLayout(vtDevice.device(), pipelineLayout, nullptr);
 	}
 
-	void SimpleRenderSystem::createPipelineLayout(VkDescriptorSetLayout globalSetLayout)
+	void SimpleRenderSystem::createPipelineLayout(std::vector<VkDescriptorSetLayout> setLayouts)
 	{
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(SimplePushConstantData);
 
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts{ globalSetLayout };
-
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
-		pipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+		pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(setLayouts.size());
+		pipelineLayoutInfo.pSetLayouts = setLayouts.data();
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 		if (vkCreatePipelineLayout(vtDevice.device(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
@@ -70,7 +69,7 @@ namespace vt
 	{
 		vtPipeline->bind(frameInfo.commandBuffer);
 
-		vkCmdBindDescriptorSets(
+		/*vkCmdBindDescriptorSets(
 			frameInfo.commandBuffer,
 			VK_PIPELINE_BIND_POINT_GRAPHICS,
 			pipelineLayout,
@@ -78,7 +77,7 @@ namespace vt
 			1,
 			&frameInfo.globalDescriptorSet,
 			0,
-			nullptr);
+			nullptr);*/
 
 		for (auto& kv : frameInfo.gameObjects)
 		{
@@ -97,7 +96,7 @@ namespace vt
 				sizeof(SimplePushConstantData),
 				&push);
 			obj.model->bind(frameInfo.commandBuffer);
-			obj.model->draw(frameInfo.commandBuffer);
+			obj.model->draw(frameInfo.commandBuffer, frameInfo.globalDescriptorSet, pipelineLayout);
 		}
 	}
 }

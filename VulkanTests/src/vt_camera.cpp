@@ -10,22 +10,23 @@
 namespace vt
 {
 	void VtCamera::setOrthographicProjection(
-		float left, float right, float top, float bottom, float near, float far)
+		float left, float right, float top, float bottom, float nearPlane, float farPlane)
 	{
 		projectionMatrix = glm::mat4{ 1.0f };
 		projectionMatrix[0][0] = 2.f / (right - left);
 		projectionMatrix[1][1] = 2.f / (bottom - top);
-		projectionMatrix[2][2] = 1.f / (far - near);
+		projectionMatrix[2][2] = 1.f / (farPlane - nearPlane);
 		projectionMatrix[3][0] = -(right + left) / (right - left);
 		projectionMatrix[3][1] = -(bottom + top) / (bottom - top);
-		projectionMatrix[3][2] = -near / (far - near);
+		projectionMatrix[3][2] = -nearPlane / (farPlane - nearPlane);
 	}
 
-	void VtCamera::setPerspectiveProjection(float fovy, float width, float height, float near, float far)
+	void VtCamera::setPerspectiveProjection(float fovy, float width, float height, float nearPlane, float farPlane)
 	{
 		//assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 
-		projectionMatrix = glm::perspectiveFov(fovy, width, height, near, far);
+		projectionMatrix = glm::perspectiveFov(fovy, width, height, nearPlane, farPlane);
+		projectionMatrix[1][1] *= -1.0f;
 
 		/*const float tanHalfFovy = tan(fovy / 2.f);
 		projectionMatrix = glm::mat4{ 0.0f };
@@ -38,7 +39,7 @@ namespace vt
 
 	void VtCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
 	{
-		viewMatrix = glm::lookAtRH(position, direction, up);
+		viewMatrix = glm::lookAtLH(position, glm::normalize(direction), glm::normalize(up));
 		inverseViewMatrix = glm::inverse(viewMatrix);
 
 		/*const glm::vec3 w{ glm::normalize(direction) };
@@ -81,8 +82,8 @@ namespace vt
 
 	void VtCamera::setViewYXZ(glm::vec3 position, glm::vec3 rotation)
 	{
-		viewMatrix = glm::translate(position) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
-		inverseViewMatrix = glm::inverse(viewMatrix);
+		inverseViewMatrix = glm::translate(position) * glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z);
+		viewMatrix = glm::inverse(inverseViewMatrix);
 
 		/*const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -120,5 +121,11 @@ namespace vt
 		inverseViewMatrix[3][0] = position.x;
 		inverseViewMatrix[3][1] = position.y;
 		inverseViewMatrix[3][2] = position.z;*/
+	}
+
+	void VtCamera::setView(const glm::mat4& world_matrix)
+	{
+		inverseViewMatrix = world_matrix;
+		viewMatrix = glm::inverse(inverseViewMatrix);
 	}
 }

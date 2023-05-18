@@ -7,7 +7,7 @@
 
 namespace vt {
 
-    class Mesh;
+    /*class Mesh;
 
     class CalcTangents {
 
@@ -37,5 +37,5 @@ namespace vt {
             const float tangentu[],
             float fSign, int iFace, int iVert);
 
-    };
+    };*/
 }

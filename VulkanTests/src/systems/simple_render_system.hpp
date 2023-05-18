@@ -16,7 +16,7 @@ namespace vt
 	class SimpleRenderSystem
 	{
 	public:
-		SimpleRenderSystem(VtDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout globalSetLayout);
+		SimpleRenderSystem(VtDevice &device, VkRenderPass renderPass, std::vector<VkDescriptorSetLayout> setLayouts);
 		~SimpleRenderSystem();
 
 		SimpleRenderSystem(const SimpleRenderSystem&) = delete;
@@ -25,7 +25,7 @@ namespace vt
 		void renderGameObjects(FrameInfo& frameInfo);
 
 	private:
-		void createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+		void createPipelineLayout(std::vector<VkDescriptorSetLayout> setLayouts);
 		void createPipeline(VkRenderPass renderPass);
 		
 		VtDevice& vtDevice;

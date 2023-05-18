@@ -2,9 +2,12 @@
 
 #include "vt_model.hpp"
 
-//libs
+// libs
 #include <glm/gtc/matrix_transform.hpp>
-//std
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/euler_angles.hpp"
+
+// std
 #include <memory>
 #include <unordered_map>
 

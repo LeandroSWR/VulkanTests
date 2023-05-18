@@ -2,15 +2,12 @@
 #include <cassert>
 #include <stdexcept>
 #include <gl/GL.h>
-#include <glm/glm.hpp>
 #include <iostream>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
+
 #include <format>
 
 namespace vt {
-    CalcTangents::CalcTangents() {
+    /*CalcTangents::CalcTangents() {
         iface.m_getNumFaces = get_num_faces;
         iface.m_getNumVerticesOfFace = get_num_vertices_of_face;
 
@@ -103,5 +100,5 @@ namespace vt {
 
         int index = working_mesh->indices[indices_index];
         return index;
-    }
+    }*/
 }

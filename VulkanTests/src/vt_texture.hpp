@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vt_device.hpp>
-#include <vulkan/vulkan_core.h>
 
 // std
 #include <string.h>
@@ -11,7 +10,7 @@ namespace vt
 	class Texture
 	{
 	public:
-		Texture(VtDevice &device, const std::string& path);
+		Texture(VtDevice &device, const std::string& filepath);
 		~Texture();
 
 		Texture(const Texture&) = delete;

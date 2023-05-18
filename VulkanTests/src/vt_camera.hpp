@@ -24,6 +24,8 @@ namespace vt
 		const glm::mat4& getProjection() const { return projectionMatrix; }
 		const glm::mat4& getView() const { return viewMatrix; }
 
+		void setView(const glm::mat4& world_matrix);
+
 	private:
 		glm::mat4 projectionMatrix{ 1.f };
 		glm::mat4 viewMatrix{ 1.f };

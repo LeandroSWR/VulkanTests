@@ -51,21 +51,8 @@ namespace vt {
 			}
 		};
 
-		/*struct Builder {
-			std::vector<Vertex> vertices{};
-			std::vector<uint32_t> indices{};
-
-			void loadModel(const std::string& filepath);
-		};*/
-
-		//VtModel(VtDevice &device, const VtModel::Builder &builder);
 		VtModel(VtDevice& device, const std::string& filepath, VtDescriptorSetLayout& setLayout, VtDescriptorPool& pool);
 		~VtModel();
-
-		VtModel(const VtModel&) = delete;
-		VtModel& operator=(const VtModel&) = delete;
-
-		//static std::unique_ptr<VtModel> createModelFromFile(VtDevice& device, const std::string& filepath);
 
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout);
@@ -83,14 +70,6 @@ namespace vt {
 
 		bool hasIndexBuffer = false;
 		std::unique_ptr<VtBuffer> indexBuffer;
-
 		VtDevice& vtDevice;
-
-		/*std::unique_ptr<VtBuffer> vertexBuffer;
-		uint32_t vertexCount;
-
-		bool hasIndexBuffer = false;
-		std::unique_ptr<VtBuffer> indexBuffer;
-		uint32_t indexCount;*/
 	};
 }

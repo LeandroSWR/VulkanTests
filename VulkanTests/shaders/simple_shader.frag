@@ -25,17 +25,11 @@ layout (set = 0, binding = 0) uniform GlobalUbo
 	int numLights;
 } ubo;
 
-//layout (set = 0, binding = 1) uniform MaterialUbo 
-//{
-//	sampler2D albedo;
-//	sampler2D normal;
-//	sampler2D metalic;
-//	sampler2D roughness;
-//} mat;
-
 layout(set = 0, binding = 1) uniform sampler2D image;
-layout(set = 0, binding = 2) uniform sampler2D specular;
-layout(set = 0, binding = 3) uniform sampler2D normal;
+
+layout(set = 1, binding = 0) uniform sampler2D albedoTexture;
+layout(set = 1, binding = 1) uniform sampler2D normalTexture;
+layout(set = 1, binding = 2) uniform sampler2D metallicRoughnessTexture;
 
 layout (push_constant) uniform Push {
 	mat4 modelMatrix;
@@ -46,9 +40,9 @@ void main()
 {
 	vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
 	vec3 specularLight = vec3(0.0);
-	vec3 specularColor = texture(specular, fragUV).rgb;
+	vec3 specularColor = texture(metallicRoughnessTexture, fragUV).rgb;
 
-	vec3 normalMapValue = texture(normal, fragUV).rgb;
+	vec3 normalMapValue = texture(normalTexture, fragUV).rgb;
 	normalMapValue = normalize(2.0 * normalMapValue - 1.0);
 
 	vec3 tangent = normalize(fragTangent.xyz);
@@ -82,7 +76,84 @@ void main()
 		specularLight += specularColor * intensity * blinnTerm;
 	}
 
-	vec3 imageColor = texture(image, fragUV).rgb;
+	vec3 imageColor = texture(albedoTexture, fragUV).rgb;
 
 	outColor = vec4(diffuseLight * imageColor + specularLight * imageColor, 1.0); //vec4(surfaceNormal * 0.5 + 0.5, 1.0); // 
 }
+
+//void main() {
+//  vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+//  vec3 specularLight = vec3(0.0);
+//  vec3 surfaceNormal = normalize(fragNormalWorld);
+//
+//  vec3 cameraPosWorld = ubo.inverseView[3].xyz;
+//  vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
+//
+//  for (int i = 0; i < ubo.numLights; i++) {
+//    PointLight light = ubo.pointLights[i];
+//    vec3 directionToLight = light.position.xyz - fragPosWorld;
+//    float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
+//    directionToLight = normalize(directionToLight);
+//
+//    float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
+//    vec3 intensity = light.color.xyz * light.color.w * attenuation;
+//
+//    diffuseLight += intensity * cosAngIncidence;
+//
+//    // specular lighting
+//    vec3 halfAngle = normalize(directionToLight + viewDirection);
+//    float blinnTerm = dot(surfaceNormal, halfAngle);
+//    blinnTerm = clamp(blinnTerm, 0, 1);
+//    blinnTerm = pow(blinnTerm, 512.0); // higher values -> sharper highlight
+//    specularLight += intensity * blinnTerm;
+//  }
+//
+//  vec3 imageColor = texture(albedoTexture, fragUV).rgb;
+//  
+//  outColor = vec4((diffuseLight * imageColor + specularLight * imageColor), 1.0);
+//}
+
+//void main() 
+//{
+//	vec3 diffuseLight = ubo.ambientLightColor.xyz * ubo.ambientLightColor.w;
+//	vec3 specularLight = vec3(0.0);
+//	vec3 specularColor = texture(specular, fragUV).rgb;
+//
+//	vec3 normalMapValue = texture(normal, fragUV).rgb;
+//	normalMapValue = normalize(2.0 * normalMapValue - 1.0);
+//
+//	vec3 tangent = normalize(fragTangent.xyz);
+//	vec3 normalWorld = normalize(fragNormalWorld);
+//
+//	// Calculate the bitangent
+//	vec3 bitangent = cross(normalWorld, tangent) * fragTangent.w;
+//
+//	// Create the TBN matrix
+//	mat3 TBN = mat3(tangent, bitangent, normalWorld);
+//
+//	vec3 surfaceNormal = normalize(TBN * normalMapValue);
+//
+//	vec3 cameraPosWorld = ubo.inverseView[3].xyz;
+//	vec3 viewDirection = normalize(cameraPosWorld - fragPosWorld);
+//
+//	for (int i = 0; i < ubo.numLights; i++) {
+//		PointLight light = ubo.pointLights[i];
+//		vec3 directionToLight = light.position.xyz - fragPosWorld;
+//		float attenuation = 1.0 / dot(directionToLight, directionToLight); // distance squared
+//		directionToLight = normalize(directionToLight);
+//		float cosAngIncidence = max(dot(surfaceNormal, directionToLight), 0);
+//		vec3 intensity = light.color.xyz * light.color.w * attenuation;
+//		diffuseLight += intensity * cosAngIncidence;
+//
+//		// compute specular lighting :)
+//		vec3 halfAngle = normalize(directionToLight + viewDirection);
+//		float blinnTerm = dot(surfaceNormal, halfAngle);
+//		blinnTerm = clamp(blinnTerm, 0, 1);
+//		blinnTerm = pow(blinnTerm, 32.0); // higher vlaue = sharper highlight
+//		specularLight += specularColor * intensity * blinnTerm;
+//	}
+//
+//	vec3 imageColor = texture(image, fragUV).rgb;
+//
+//	outColor = vec4(diffuseLight * imageColor + specularLight * imageColor, 1.0); //vec4(surfaceNormal * 0.5 + 0.5, 1.0); // 
+//}

@@ -200,6 +200,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
     <ClInclude Include="src\vt_device.hpp" />
     <ClInclude Include="src\vt_pipeline.hpp" />
     <ClInclude Include="src\vt_texture.hpp" />
+    <ClInclude Include="src\vt_utils.hpp" />
     <ClInclude Include="src\vt_window.hpp" />
   </ItemGroup>
   <ItemGroup>

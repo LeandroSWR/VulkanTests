@@ -29,7 +29,6 @@ namespace vt
 			.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VtSwapChain::MAX_FRAMES_IN_FLIGHT)
 			.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000)
 			.build();
-
 		loadGameObjects();
 	}
 
@@ -56,22 +55,6 @@ namespace vt
 		imageInfo.sampler = texture->getSampler();
 		imageInfo.imageView = texture->getImageView();
 		imageInfo.imageLayout = texture->getImageLayout();
-
-		//// Load the specular texture
-		//auto specularTexture = std::make_unique<Texture>(vtDevice, "textures/normal_cube_lambert1_Metallic.png");
-
-		//VkDescriptorImageInfo specularInfo = {};
-		//specularInfo.sampler = specularTexture->getSampler();
-		//specularInfo.imageView = specularTexture->getImageView();
-		//specularInfo.imageLayout = specularTexture->getImageLayout();
-
-		//// Load the normal texture
-		//auto normalTexture = std::make_unique<Texture>(vtDevice, "textures/normal_cube_lambert1_Normal.png");
-
-		//VkDescriptorImageInfo normalInfo = {};
-		//normalInfo.sampler = normalTexture->getSampler();
-		//normalInfo.imageView = normalTexture->getImageView();
-		//normalInfo.imageLayout = normalTexture->getImageLayout();
 
 		auto globalSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -111,15 +94,15 @@ namespace vt
 		std::shared_ptr<VtModel> lveModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *materialSetLayout, *globalPool);
 		auto floor = VtGameObject::createGameObject();
 		floor.model = lveModel;
-		floor.transform.translation = { 0.f, .5f, 0.f };
-		floor.transform.scale = { .01f, .01f, .01f };
-		floor.transform.rotation = { 0.0f, 0.0f, 3.14159265f };
+		floor.transform.translation = { 0.f, 0.f, 0.f };
+		floor.transform.scale = { .1f, .1f, .1f };
+		floor.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
 		gameObjects.emplace(floor.getId(), std::move(floor));
 
         VtCamera camera{};
 
-        camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
-		//camera.setViewTarget(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f));
+        //camera.setViewTarget(glm::vec3(-1.f, -2.f, -2.f), glm::vec3(0.f, 0.f, 2.5f));
+		camera.setViewTarget(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, 0.f));
 
         auto viewerObject = VtGameObject::createGameObject();
 		viewerObject.transform.translation.z = -2.5f;

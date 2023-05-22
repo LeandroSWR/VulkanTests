@@ -43,10 +43,10 @@ namespace vt {
 			std::shared_ptr<Texture> metallic_roughness_texture;
 			std::shared_ptr<Texture> normal_texture;
 			std::shared_ptr<Texture> occlusion_texture;
-			std::shared_ptr<Texture> emissive_Texture;
+			std::shared_ptr<Texture> emissive_texture;
 			PBRParameters pbr_parameters = {};
 
-			std::shared_ptr<VtBuffer> pbr_parameters_buffer = {};
+			//std::shared_ptr<VtBuffer> pbr_parameters_buffer = {};
 			VkDescriptorSet descriptor_set = {};
 		};
 
@@ -86,7 +86,7 @@ namespace vt {
 		~VtModel();
 
 		void bind(VkCommandBuffer commandBuffer);
-		void draw(FrameInfo frameInfo, VkPipelineLayout pipelineLayout);
+		void draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout);
 		
 	private:
 		void createVertexBuffers(const std::vector<Vertex>& vertices);

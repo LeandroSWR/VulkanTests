@@ -12,6 +12,7 @@
 // std
 #include <cassert>
 #include <cstring>
+#include <cstdint>
 #include <unordered_map>
 #include <filesystem>
 #include <iostream>
@@ -101,20 +102,20 @@ namespace vt
         vtDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
     }
 
-    void VtModel::draw(FrameInfo frameInfo, VkPipelineLayout pipelineLayout)
+    void VtModel::draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout)
     {
         for (auto& primitive : primitives)
         {
             if (hasIndexBuffer)
             {
-                std::vector<VkDescriptorSet> sets{ frameInfo.global_descriptor_set, primitive.material.descriptor_set };
-                vkCmdBindDescriptorSets(frameInfo.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+                std::vector<VkDescriptorSet> sets{ globalDescriptorSet, primitive.material.descriptor_set };
+                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
                     sets.size(), sets.data(), 0, nullptr);
-                vkCmdDrawIndexed(frameInfo.command_buffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
+                vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
             }
             else
             {
-                vkCmdDraw(frameInfo.command_buffer, primitive.vertexCount, 1, 0, 0);
+                vkCmdDraw(commandBuffer, primitive.vertexCount, 1, 0, 0);
             }
         }
     }
@@ -129,6 +130,26 @@ namespace vt
         {
             vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
+    }
+
+    std::vector<VkVertexInputBindingDescription> VtModel::Vertex::getBindingDescriptions()
+    {
+        std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+        bindingDescriptions[0].binding = 0;
+        bindingDescriptions[0].stride = sizeof(Vertex);
+        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        return bindingDescriptions;
+    }
+
+    std::vector<VkVertexInputAttributeDescription> VtModel::Vertex::getAttributeDescriptions()
+    {
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+        attributeDescriptions.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
+        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
+        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
+        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
+
+        return attributeDescriptions;
     }
 
     VtModel::~VtModel() {}
@@ -252,80 +273,118 @@ namespace vt
 
                     std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");
 
-                    Material material{};
+                    PBRMaterial material = {};
                     if (GltfPrimitive.material != -1)
                     {
-                        tinygltf::Material& GltfPrimitiveMaterial = GltfModel.materials[GltfPrimitive.material];
-
-                        if (GltfPrimitiveMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+                        tinygltf::Material& primitiveMaterial = GltfModel.materials[GltfPrimitive.material];
+                        if (primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
                         {
-                            uint32_t textureIndex = GltfPrimitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;
-                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
-                            material.albedoTexture = images[imageIndex];
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                          // Get the image index
+                            material.base_color_texture = images[imageIndex];                                       // Set Base Color Texture
+                            material.pbr_parameters.has_base_color_texture = 1;                                     // Set Has_Base_Color Parameter
                         }
                         else
                         {
-                            material.albedoTexture = defaultTexture;
+                            material.base_color_texture = defaultTexture;
+                            material.pbr_parameters.has_base_color_texture = 0;
+                            auto color = primitiveMaterial.pbrMetallicRoughness.baseColorFactor;
+                            material.pbr_parameters.base_color_factor = { color[0], color[1], color[2], color[3] };
                         }
 
-                        if (GltfPrimitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
+                        if (primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
                         {
-                            uint32_t textureIndex = GltfPrimitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
-                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
-                            material.metallicRoughnessTexture = images[imageIndex];
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                                  // Get the image index
+                            material.metallic_roughness_texture = images[imageIndex];                                               // Set Base Color Texture
+                            material.pbr_parameters.has_metallic_roughness_texture = 1;                                             // Set Has_Base_Color Parameter
                         }
                         else
                         {
-                            material.metallicRoughnessTexture = defaultTexture;
+                            material.metallic_roughness_texture = defaultTexture;
+                            material.pbr_parameters.has_metallic_roughness_texture = 0;
+                            material.pbr_parameters.metallic_factor = primitiveMaterial.pbrMetallicRoughness.metallicFactor;
+                            material.pbr_parameters.roughness_factor = primitiveMaterial.pbrMetallicRoughness.roughnessFactor;
                         }
 
-                        if (GltfPrimitiveMaterial.normalTexture.index != -1)
+                        if (primitiveMaterial.normalTexture.index != -1)
                         {
-                            uint32_t textureIndex = GltfPrimitiveMaterial.normalTexture.index;
+                            uint32_t textureIndex = primitiveMaterial.normalTexture.index;
                             uint32_t imageIndex = GltfModel.textures[textureIndex].source;
-                            material.normalTexture = images[imageIndex];
+                            material.normal_texture = images[imageIndex];
+                            material.pbr_parameters.has_normal_texture = 1;
+                            material.pbr_parameters.scale = primitiveMaterial.normalTexture.scale;
                         }
                         else
                         {
-                            material.normalTexture = defaultTexture;
+                            material.normal_texture = defaultTexture;
+                            material.pbr_parameters.has_normal_texture = 0;
                         }
+                        
+                        if (primitiveMaterial.occlusionTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.occlusionTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.occlusion_texture = images[imageIndex];
+                            material.pbr_parameters.has_occlusion_texture = 1;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+                        else
+                        {
+                            material.occlusion_texture = defaultTexture;
+                            material.pbr_parameters.has_occlusion_texture = 0;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+
+                        if (primitiveMaterial.emissiveTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.emissiveTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.emissive_texture = images[imageIndex];
+                            material.pbr_parameters.has_emissive_texture = 1;
+                        }
+                        else
+                        {
+                            material.emissive_texture = defaultTexture;
+                            material.pbr_parameters.has_emissive_texture = 0;
+                            auto color = primitiveMaterial.emissiveFactor;
+                            material.pbr_parameters.emissive_factor = { color[0], color[1], color[2] };
+                        }
+
+                        material.pbr_parameters.alpha_cut_off = primitiveMaterial.alphaCutoff;
+                        material.pbr_parameters.alpha_mode = 0.f;//static_cast<float>(primitiveMaterial.alphaMode);
                     }
                     else
                     {
-                        material.albedoTexture = defaultTexture;
-                        material.normalTexture = defaultTexture;
-                        material.metallicRoughnessTexture = defaultTexture;
+                        // TODO: USE SPECIFIC TEXTURE FOR METALLIC AND NORMAL
+                        material.base_color_texture = defaultTexture;
+                        material.metallic_roughness_texture = defaultTexture;
+                        material.normal_texture = defaultTexture;
+                        material.occlusion_texture = defaultTexture;
+                        material.emissive_texture = defaultTexture;
                     }
 
-                    VkDescriptorImageInfo albedo_info = {};
-                    albedo_info.sampler = material.albedoTexture->getSampler();
-                    albedo_info.imageView = material.albedoTexture->getImageView();
-                    albedo_info.imageLayout = material.albedoTexture->getImageLayout();
-
-                    VkDescriptorImageInfo normal_info = {};
-                    normal_info.sampler = material.normalTexture->getSampler();
-                    normal_info.imageView = material.normalTexture->getImageView();
-                    normal_info.imageLayout = material.normalTexture->getImageLayout();
-
-                    VkDescriptorImageInfo metallicRoughness_info = {};
-                    metallicRoughness_info.sampler = material.metallicRoughnessTexture->getSampler();
-                    metallicRoughness_info.imageView = material.metallicRoughnessTexture->getImageView();
-                    metallicRoughness_info.imageLayout = material.metallicRoughnessTexture->getImageLayout();
-
-
+                    VkDescriptorImageInfo baseColorImageInfo = material.base_color_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo metallicRoughnessImageInfo = material.metallic_roughness_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo normalImageInfo = material.normal_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo occlusionImageInfo = material.occlusion_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo emissiveImageInfo = material.emissive_texture->getDescriptorImageInfo();
+                    
                     VtDescriptorWriter(materialSetLayout, descriptorPool)
-                        .writeImage(0, &albedo_info)
-                        .writeImage(1, &normal_info)
-                        .writeImage(2, &metallicRoughness_info)
-                        .build(material.descriptorSet);
+                        .writeImage(0, &baseColorImageInfo)
+                        .writeImage(1, &metallicRoughnessImageInfo)
+                        .writeImage(2, &normalImageInfo)
+                        .writeImage(3, &occlusionImageInfo)
+                        .writeImage(4, &emissiveImageInfo)
+                        .build(material.descriptor_set);
 
-                    Primitive primitive{};
-                    primitive.firstVertex = vertexOffset;
-                    primitive.vertexCount = vertexCount;
-                    primitive.indexCount = indexCount;
-                    primitive.firstIndex = indexOffset;
-                    //primitive.material = material;
-                    primitives.push_back(primitive);
+                    Primitive meshPrimivite{};
+                    meshPrimivite.firstVertex = vertexOffset;
+                    meshPrimivite.vertexCount = vertexCount;
+                    meshPrimivite.indexCount = indexCount;
+                    meshPrimivite.firstIndex = indexOffset;
+                    meshPrimivite.material = std::move(material);
+                    primitives.push_back(meshPrimivite);
 
                     vertexOffset += vertexCount;
                     indexOffset += indexCount;
@@ -335,25 +394,5 @@ namespace vt
             createVertexBuffers(vertices);
             createIndexBuffers(indices);
         }
-    }
-
-    std::vector<VkVertexInputBindingDescription> VtModel::Vertex::getBindingDescriptions()
-    {
-        std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-        bindingDescriptions[0].binding = 0;
-        bindingDescriptions[0].stride = sizeof(Vertex);
-        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return bindingDescriptions;
-    }
-
-    std::vector<VkVertexInputAttributeDescription> VtModel::Vertex::getAttributeDescriptions()
-    {
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-        attributeDescriptions.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
-        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
-        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
-        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
-
-        return attributeDescriptions;
     }
 }

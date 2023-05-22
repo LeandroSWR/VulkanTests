@@ -39,8 +39,8 @@ namespace vt {
 			return VtGameObject{ currentId++ };
 		}
 
-		static VtGameObject makePointLight(
-			float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f));
+		/*static VtGameObject makePointLight(
+			float intensity = 10.f, float radius = 0.1f, glm::vec3 color = glm::vec3(1.f));*/
 
 		VtGameObject(const VtGameObject&) = delete;
 		VtGameObject& operator=(const VtGameObject&) = delete;

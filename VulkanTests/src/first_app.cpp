@@ -5,7 +5,6 @@
 #include "keyboard_movement_controller.hpp"
 #include "vt_buffer.hpp"
 #include "vt_camera.hpp"
-#include "systems/point_light_system.hpp"
 #include "systems/simple_render_system.hpp"
 
 // libs
@@ -68,7 +67,7 @@ namespace vt
 			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();*/
 
-		auto pbr_material_descriptor_set_layout = 
+		auto pbrMaterialSetLayout = 
 			VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -91,21 +90,21 @@ namespace vt
 		SimpleRenderSystem simpleRenderSystem{ 
 			vtDevice, 
 			vtRenderer.getSwapChainRenderPass(), 
-			{globalSetLayout->getDescriptorSetLayout(), pbr_material_descriptor_set_layout->getDescriptorSetLayout()}
+			{globalSetLayout->getDescriptorSetLayout(), pbrMaterialSetLayout->getDescriptorSetLayout()}
 		};
-		PointLightSystem pointLightSystem{
+		/*PointLightSystem pointLightSystem{
 			vtDevice,
 			vtRenderer.getSwapChainRenderPass(),
 			globalSetLayout->getDescriptorSetLayout()
-		};
+		};*/
 
-		std::shared_ptr<VtModel> lveModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *pbr_material_descriptor_set_layout, *globalPool);
-		auto floor = VtGameObject::createGameObject();
-		floor.model = lveModel;
-		floor.transform.translation = { 0.f, 0.f, 0.f };
-		floor.transform.scale = { .1f, .1f, .1f };
-		floor.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
-		gameObjects.emplace(floor.getId(), std::move(floor));
+		std::shared_ptr<VtModel> vtModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *pbrMaterialSetLayout, *globalPool);
+		auto sponza = VtGameObject::createGameObject();
+		sponza.model = vtModel;
+		sponza.transform.translation = { 0.f, 0.f, 0.f };
+		sponza.transform.scale = { .1f, .1f, .1f };
+		sponza.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
+		gameObjects.emplace(sponza.getId(), std::move(sponza));
 
         VtCamera camera{};
 
@@ -136,6 +135,15 @@ namespace vt
 			{
 				int frameIndex = vtRenderer.getFrameIndex();
 
+				FrameInfo frameInfo{
+					frameIndex,
+					frameTime,
+					commandBuffer,
+					camera,
+					globalDescriptorSets[frameIndex],
+					gameObjects
+				};
+
 				GlobalUbo ubo{};
 				ubo.projection = camera.getProjection();
 				ubo.view = camera.getView();
@@ -144,16 +152,6 @@ namespace vt
 				// update
 				uboBuffers[frameIndex]->writeToBuffer(&ubo);
 				uboBuffers[frameIndex]->flush();
-
-				FrameInfo frameInfo{
-					frameIndex,
-					frameTime, 
-					commandBuffer,
-					camera,
-					globalDescriptorSets[frameIndex],
-					gameObjects,
-					ubo
-				};
 
 				// render
 				vtRenderer.beginSwapChainRenderPass(commandBuffer);
@@ -169,7 +167,7 @@ namespace vt
 	void FirstApp::loadGameObjects()
 	{
 		// Point Lights!
-		std::vector<glm::vec3> lightColors{
+		/*std::vector<glm::vec3> lightColors{
 			{1.f, .1f, .1f},
 			{.1f, .1f, 1.f},
 			{.1f, 1.f, .1f},
@@ -188,6 +186,6 @@ namespace vt
 				{ 0.f, -1.f, 0.f });
 			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -0.02f, -1.f, 1.f));
 			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
-		}
+		}*/
 	}
 }

@@ -67,9 +67,19 @@ namespace vt
 
 	void SimpleRenderSystem::renderGameObjects(FrameInfo& frameInfo)
 	{
-		vtPipeline->bind(frameInfo.command_buffer);
+		vtPipeline->bind(frameInfo.commandBuffer);
 
-		for (auto& kv : frameInfo.game_objects)
+		/*vkCmdBindDescriptorSets(
+			frameInfo.commandBuffer,
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			pipelineLayout,
+			0,
+			1,
+			&frameInfo.globalDescriptorSet,
+			0,
+			nullptr);*/
+
+		for (auto& kv : frameInfo.gameObjects)
 		{
 			auto& obj = kv.second;
 			if (obj.model == nullptr) continue;
@@ -79,14 +89,14 @@ namespace vt
 			push.normalMatrix = obj.transform.normalMatrix();
 
 			vkCmdPushConstants(
-				frameInfo.command_buffer,
+				frameInfo.commandBuffer,
 				pipelineLayout,
 				VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
 				0,
 				sizeof(SimplePushConstantData),
 				&push);
-			obj.model->bind(frameInfo.command_buffer);
-			obj.model->draw(frameInfo, pipelineLayout);
+			//obj.model->bind(frameInfo.commandBuffer);
+			//obj.model->draw(frameInfo.commandBuffer, frameInfo.globalDescriptorSet, pipelineLayout);
 		}
 	}
 }

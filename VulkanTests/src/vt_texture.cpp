@@ -216,4 +216,13 @@ namespace vt
 
         vtDevice.endSingleTimeCommands(commandBuffer);
     }
+
+    VkDescriptorImageInfo Texture::getDescriptorImageInfo()
+    {
+        return VkDescriptorImageInfo{
+                .sampler = sampler,
+                .imageView = imageView,
+                .imageLayout = imageLayout
+        };
+    }
 }

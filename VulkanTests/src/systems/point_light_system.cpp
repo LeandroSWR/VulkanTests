@@ -72,32 +72,32 @@ namespace vt
 
 	void PointLightSystem::update(FrameInfo& frameInfo)
 	{
-		auto rotateLight = glm::rotate(
-			glm::mat4(1.f),
-			frameInfo.frame_time * 0.25f,
-			{ 0.f, -1.f, 0.f });
+		//auto rotateLight = glm::rotate(
+		//	glm::mat4(1.f),
+		//	frameInfo.frame_time * 0.25f,
+		//	{ 0.f, -1.f, 0.f });
 
-		int lightIndex = 0;
-		for (auto& kv : frameInfo.game_objects)
-		{
-			auto& obj = kv.second;
-			if (obj.pointLight == nullptr) continue;
+		//int lightIndex = 0;
+		//for (auto& kv : frameInfo.game_objects)
+		//{
+		//	auto& obj = kv.second;
+		//	if (obj.pointLight == nullptr) continue;
 
-			// update
-			obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
+		//	// update
+		//	obj.transform.translation = glm::vec3(rotateLight * glm::vec4(obj.transform.translation, 1.f));
 
-			// copy light to ubo
-			frameInfo.ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
-			frameInfo.ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
-			lightIndex += 1;
-		}
+		//	// copy light to ubo
+		//	frameInfo.ubo.pointLights[lightIndex].position = glm::vec4(obj.transform.translation, 1.f);
+		//	frameInfo.ubo.pointLights[lightIndex].color = glm::vec4(obj.color, obj.pointLight->lightIntensity);
+		//	lightIndex += 1;
+		//}
 
-		frameInfo.ubo.numLights = lightIndex;
+		//frameInfo.ubo.numLights = lightIndex;
 	}
 
 	void PointLightSystem::render(FrameInfo& frameInfo)
 	{
-		vtPipeline->bind(frameInfo.command_buffer);
+		/*vtPipeline->bind(frameInfo.command_buffer);
 
 		vkCmdBindDescriptorSets(
 			frameInfo.command_buffer,
@@ -129,6 +129,6 @@ namespace vt
 			);
 
 			vkCmdDraw(frameInfo.command_buffer, 6, 1, 0, 0);
-		}
+		}*/
 	}
 }

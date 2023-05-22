@@ -31,12 +31,11 @@ namespace vt
 
 	struct FrameInfo
 	{
-		int frame_index;
-		float frame_time;
-		VkCommandBuffer command_buffer;
+		int frameIndex;
+		float frameTime;
+		VkCommandBuffer commandBuffer;
 		VtCamera& camera;
-		VkDescriptorSet global_descriptor_set;
-		VtGameObject::Map& game_objects;
-		GlobalUbo ubo;
+		VkDescriptorSet globalDescriptorSet;
+		VtGameObject::Map& gameObjects;
 	};
 }

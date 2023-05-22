@@ -38,7 +38,7 @@ namespace std
             return seed;
         }
     };
-}  // namespace std
+}
 
 namespace vt
 {
@@ -219,59 +219,57 @@ namespace vt
                         tangentsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     }
 
-                    for (size_t v = 0; v < vertexCount; v++)
+                    for (size_t i = 0; i < vertexCount; i++)
                     {
                         Vertex vertex{};
-                        vertex.position = glm::make_vec3(&positionBuffer[v * 3]);
+                        vertex.position = glm::make_vec3(&positionBuffer[i * 3]);
                         vertex.color = glm::vec3(1.0);
                         vertex.normal = glm::normalize(
-                            glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                            glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[i * 3]) : glm::vec3(0.0f)));
                         vertex.tangent = glm::vec4(
-                            tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));;
-                        vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
+                            tangentsBuffer ? glm::make_vec4(&tangentsBuffer[i * 4]) : glm::vec4(0.0f));;
+                        vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[i * 2]) : glm::vec2(0.0f);
                         vertices.push_back(vertex);
                     }
 
+                    const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.indices];
+                    const tinygltf::BufferView& bufferView = GltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer& buffer = GltfModel.buffers[bufferView.buffer];
+
+                    indexCount += static_cast<uint32_t>(accessor.count);
+
+                    switch (accessor.componentType)
                     {
-                        const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.indices];
-                        const tinygltf::BufferView& bufferView = GltfModel.bufferViews[accessor.bufferView];
-                        const tinygltf::Buffer& buffer = GltfModel.buffers[bufferView.buffer];
-
-                        indexCount += static_cast<uint32_t>(accessor.count);
-
-                        switch (accessor.componentType)
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
+                    {
+                        const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++)
                         {
-                        case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
+                            indices.push_back(buf[index]);
+                        }
+                        break;
+                    }
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+                    {
+                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++)
                         {
-                            const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                            for (size_t index = 0; index < accessor.count; index++)
-                            {
-                                indices.push_back(buf[index]);
-                            }
-                            break;
+                            indices.push_back(buf[index]);
                         }
-                        case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
+                        break;
+                    }
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
+                    {
+                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
+                        for (size_t index = 0; index < accessor.count; index++)
                         {
-                            const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                            for (size_t index = 0; index < accessor.count; index++)
-                            {
-                                indices.push_back(buf[index]);
-                            }
-                            break;
+                            indices.push_back(buf[index]);
                         }
-                        case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
-                        {
-                            const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
-                            for (size_t index = 0; index < accessor.count; index++)
-                            {
-                                indices.push_back(buf[index]);
-                            }
-                            break;
-                        }
-                        default:
-                            std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
-                            return;
-                        }
+                        break;
+                    }
+                    default:
+                        std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+                        return;
                     }
 
                     std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");

@@ -61,11 +61,21 @@ namespace vt
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
-		auto materialSetLayout =
+		/*auto materialSetLayout =
 			VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();*/
+
+		auto pbr_material_descriptor_set_layout = 
+			VtDescriptorSetLayout::Builder(vtDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
@@ -75,15 +85,13 @@ namespace vt
 			VtDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
 				.writeImage(1, &imageInfo)
-				/*.writeImage(2, &specularInfo)
-				.writeImage(3, &normalInfo)*/
 				.build(globalDescriptorSets[i]);
 		}
 
 		SimpleRenderSystem simpleRenderSystem{ 
 			vtDevice, 
 			vtRenderer.getSwapChainRenderPass(), 
-			{globalSetLayout->getDescriptorSetLayout(), materialSetLayout->getDescriptorSetLayout()}
+			{globalSetLayout->getDescriptorSetLayout(), pbr_material_descriptor_set_layout->getDescriptorSetLayout()}
 		};
 		PointLightSystem pointLightSystem{
 			vtDevice,
@@ -91,7 +99,7 @@ namespace vt
 			globalSetLayout->getDescriptorSetLayout()
 		};
 
-		std::shared_ptr<VtModel> lveModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *materialSetLayout, *globalPool);
+		std::shared_ptr<VtModel> lveModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *pbr_material_descriptor_set_layout, *globalPool);
 		auto floor = VtGameObject::createGameObject();
 		floor.model = lveModel;
 		floor.transform.translation = { 0.f, 0.f, 0.f };
@@ -159,29 +167,6 @@ namespace vt
 
 	void FirstApp::loadGameObjects()
 	{
-  //      std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
-
-  //      /*auto vikingRoom = VtGameObject::createGameObject();
-		//vikingRoom.model = vtModel;
-		//vikingRoom.transform.rotation = { 1.57f, 0.f, -1.57f };
-		//vikingRoom.transform.translation = { .0f, 0.5f, 0.f };
-		//vikingRoom.transform.scale = { 1.5f, 1.5f, 1.5f };
-  //      gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));*/
-
-		//auto vikingRoom = VtGameObject::createGameObject();
-		//vikingRoom.model = vtModel;
-		//vikingRoom.transform.rotation = { 0.f, 0.f, 0.f };
-		//vikingRoom.transform.translation = { .0f, 0.f, 0.f };
-		//vikingRoom.transform.scale = { 0.01f, 0.01f, 0.01f };
-		//gameObjects.emplace(vikingRoom.getId(), std::move(vikingRoom));
-
-		//vtModel = VtModel::createModelFromFile(vtDevice, "models/plane_2.obj");
-		//auto floor = VtGameObject::createGameObject();
-		//floor.model = vtModel;
-		//floor.transform.translation = { 0.f, -.5f, 0.f };
-		//floor.transform.scale = { 5.f, 1.f, 5.f };
-		//gameObjects.emplace(floor.getId(), std::move(floor));
-
 		// Point Lights!
 		std::vector<glm::vec3> lightColors{
 			{1.f, .1f, .1f},

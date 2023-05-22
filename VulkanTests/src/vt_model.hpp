@@ -5,6 +5,7 @@
 #include "vt_device.hpp"
 #include "vt_texture.hpp"
 #include "vt_descriptors.hpp"
+#include "vt_frame_info.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -85,8 +86,8 @@ namespace vt {
 		~VtModel();
 
 		void bind(VkCommandBuffer commandBuffer);
-		void draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout);
-
+		void draw(FrameInfo frameInfo, VkPipelineLayout pipelineLayout);
+		
 	private:
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
 		void createIndexBuffers(const std::vector<uint32_t>& indices);

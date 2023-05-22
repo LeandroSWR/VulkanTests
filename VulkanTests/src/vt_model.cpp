@@ -34,7 +34,7 @@ namespace std
         size_t operator()(vt::VtModel::Vertex const& vertex) const
         {
             size_t seed = 0;
-            vt::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            vt::hashCombine(seed, vertex.position, vertex.normal, vertex.uv);
             return seed;
         }
     };
@@ -101,20 +101,20 @@ namespace vt
         vtDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
     }
 
-    void VtModel::draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout)
+    void VtModel::draw(FrameInfo frameInfo, VkPipelineLayout pipelineLayout)
     {
         for (auto& primitive : primitives)
         {
             if (hasIndexBuffer)
             {
-                std::vector<VkDescriptorSet> sets{ globalDescriptorSet, primitive.material.descriptorSet };
-                vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
+                std::vector<VkDescriptorSet> sets{ frameInfo.global_descriptor_set, primitive.material.descriptor_set };
+                vkCmdBindDescriptorSets(frameInfo.command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
                     sets.size(), sets.data(), 0, nullptr);
-                vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
+                vkCmdDrawIndexed(frameInfo.command_buffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
             }
             else
             {
-                vkCmdDraw(commandBuffer, primitive.vertexCount, 1, 0, 0);
+                vkCmdDraw(frameInfo.command_buffer, primitive.vertexCount, 1, 0, 0);
             }
         }
     }
@@ -129,27 +129,6 @@ namespace vt
         {
             vkCmdBindIndexBuffer(commandBuffer, indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
         }
-    }
-
-    std::vector<VkVertexInputBindingDescription> VtModel::Vertex::getBindingDescriptions()
-    {
-        std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
-        bindingDescriptions[0].binding = 0;
-        bindingDescriptions[0].stride = sizeof(Vertex);
-        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return bindingDescriptions;
-    }
-
-    std::vector<VkVertexInputAttributeDescription> VtModel::Vertex::getAttributeDescriptions()
-    {
-        std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-        attributeDescriptions.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
-        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color) });
-        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
-        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
-        attributeDescriptions.push_back({ 4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
-
-        return attributeDescriptions;
     }
 
     VtModel::~VtModel() {}
@@ -223,7 +202,6 @@ namespace vt
                     {
                         Vertex vertex{};
                         vertex.position = glm::make_vec3(&positionBuffer[i * 3]);
-                        vertex.color = glm::vec3(1.0);
                         vertex.normal = glm::normalize(
                             glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[i * 3]) : glm::vec3(0.0f)));
                         vertex.tangent = glm::vec4(
@@ -346,7 +324,7 @@ namespace vt
                     primitive.vertexCount = vertexCount;
                     primitive.indexCount = indexCount;
                     primitive.firstIndex = indexOffset;
-                    primitive.material = material;
+                    //primitive.material = material;
                     primitives.push_back(primitive);
 
                     vertexOffset += vertexCount;
@@ -359,4 +337,23 @@ namespace vt
         }
     }
 
+    std::vector<VkVertexInputBindingDescription> VtModel::Vertex::getBindingDescriptions()
+    {
+        std::vector<VkVertexInputBindingDescription> bindingDescriptions(1);
+        bindingDescriptions[0].binding = 0;
+        bindingDescriptions[0].stride = sizeof(Vertex);
+        bindingDescriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        return bindingDescriptions;
+    }
+
+    std::vector<VkVertexInputAttributeDescription> VtModel::Vertex::getAttributeDescriptions()
+    {
+        std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
+        attributeDescriptions.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
+        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
+        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
+        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
+
+        return attributeDescriptions;
+    }
 }

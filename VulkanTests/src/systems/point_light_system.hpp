@@ -22,7 +22,7 @@ namespace vt
 		PointLightSystem(const PointLightSystem&) = delete;
 		PointLightSystem& operator=(const PointLightSystem&) = delete;
 
-		void update(FrameInfo& frameInfo, GlobalUbo& ubo);
+		void update(FrameInfo& frameInfo);
 		void render(FrameInfo& frameInfo);
 
 	private:

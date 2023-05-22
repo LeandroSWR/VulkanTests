@@ -5,7 +5,13 @@
 
 namespace vt 
 {
-#define MAX_LIGHTS 10
+	#define MAX_LIGHTS 10
+
+	struct DirectionalLight // For later use
+	{
+		glm::mat4 mvp{ 1.0 };
+		glm::vec4 position{ 0.0f, 0.0f, 0.0f, 0.0f };
+	};
 
 	struct PointLight
 	{
@@ -25,11 +31,12 @@ namespace vt
 
 	struct FrameInfo
 	{
-		int frameIndex;
-		float frameTime;
-		VkCommandBuffer commandBuffer;
+		int frame_index;
+		float frame_time;
+		VkCommandBuffer command_buffer;
 		VtCamera& camera;
-		VkDescriptorSet globalDescriptorSet;
-		VtGameObject::Map& gameObjects;
+		VkDescriptorSet global_descriptor_set;
+		VtGameObject::Map& game_objects;
+		GlobalUbo ubo;
 	};
 }

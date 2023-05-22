@@ -135,28 +135,29 @@ namespace vt
 			if (auto commandBuffer = vtRenderer.beginFrame())
 			{
 				int frameIndex = vtRenderer.getFrameIndex();
+
+				GlobalUbo ubo{};
+				ubo.projection = camera.getProjection();
+				ubo.view = camera.getView();
+				ubo.iverseView = camera.getInverseView();
+
+				// update
+				uboBuffers[frameIndex]->writeToBuffer(&ubo);
+				uboBuffers[frameIndex]->flush();
+
 				FrameInfo frameInfo{
 					frameIndex,
 					frameTime, 
 					commandBuffer,
 					camera,
 					globalDescriptorSets[frameIndex],
-					gameObjects
+					gameObjects,
+					ubo
 				};
-
-				// update
-				GlobalUbo ubo{};
-				ubo.projection = camera.getProjection();
-				ubo.view = camera.getView();
-				ubo.iverseView = camera.getInverseView();
-				pointLightSystem.update(frameInfo, ubo);
-				uboBuffers[frameIndex]->writeToBuffer(&ubo);
-				uboBuffers[frameIndex]->flush();
 
 				// render
 				vtRenderer.beginSwapChainRenderPass(commandBuffer);
 				simpleRenderSystem.renderGameObjects(frameInfo);
-				pointLightSystem.render(frameInfo);
 				vtRenderer.endSwapChainRenderPass(commandBuffer);
 				vtRenderer.endFrame();
 			}

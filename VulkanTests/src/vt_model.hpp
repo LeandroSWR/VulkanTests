@@ -61,7 +61,7 @@ namespace vt {
 			uint32_t firstVertex;
 			uint32_t indexCount;
 			uint32_t vertexCount;
-			Material material;
+			PBRMaterial material;
 		};
 
 		struct Vertex {

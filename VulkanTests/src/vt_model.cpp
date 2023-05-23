@@ -107,7 +107,7 @@ namespace vt
         {
             if (hasIndexBuffer)
             {
-                std::vector<VkDescriptorSet> sets{ globalDescriptorSet, primitive.material.descriptorSet };
+                std::vector<VkDescriptorSet> sets{ globalDescriptorSet, primitive.material.descriptor_set };
                 vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0,
                     sets.size(), sets.data(), 0, nullptr);
                 vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, primitive.firstVertex, 0);
@@ -218,15 +218,15 @@ namespace vt
                         tangentsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     }
 
-                    for (size_t v = 0; v < vertexCount; v++)
+                    for (size_t i = 0; i < vertexCount; i++)
                     {
                         Vertex vertex{};
-                        vertex.position = glm::make_vec3(&positionBuffer[v * 3]);
+                        vertex.position = glm::make_vec3(&positionBuffer[i * 3]);
                         vertex.normal = glm::normalize(
-                            glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
+                            glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[i * 3]) : glm::vec3(0.0f)));
                         vertex.tangent = glm::vec4(
-                            tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));;
-                        vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
+                            tangentsBuffer ? glm::make_vec4(&tangentsBuffer[i * 4]) : glm::vec4(0.0f));;
+                        vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[i * 2]) : glm::vec2(0.0f);
                         vertices.push_back(vertex);
                     }
 
@@ -274,7 +274,112 @@ namespace vt
 
                     std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");
 
-                    Material material{};
+                    PBRMaterial material = {};
+                    if (GltfPrimitive.material != -1)
+                    {
+                        tinygltf::Material& primitiveMaterial = GltfModel.materials[GltfPrimitive.material];
+                        if (primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                          // Get the image index
+                            material.base_color_texture = images[imageIndex];                                       // Set Base Color Texture
+                            material.pbr_parameters.has_base_color_texture = 1;                                     // Set Has_Base_Color Parameter
+                        }
+                        else
+                        {
+                            material.base_color_texture = defaultTexture;
+                            material.pbr_parameters.has_base_color_texture = 0;
+                            auto color = primitiveMaterial.pbrMetallicRoughness.baseColorFactor;
+                            material.pbr_parameters.base_color_factor = { color[0], color[1], color[2], color[3] };
+                        }
+
+                        if (primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                                  // Get the image index
+                            material.metallic_roughness_texture = images[imageIndex];                                               // Set Base Color Texture
+                            material.pbr_parameters.has_metallic_roughness_texture = 1;                                             // Set Has_Base_Color Parameter
+                        }
+                        else
+                        {
+                            material.metallic_roughness_texture = defaultTexture;
+                            material.pbr_parameters.has_metallic_roughness_texture = 0;
+                            material.pbr_parameters.metallic_factor = primitiveMaterial.pbrMetallicRoughness.metallicFactor;
+                            material.pbr_parameters.roughness_factor = primitiveMaterial.pbrMetallicRoughness.roughnessFactor;
+                        }
+
+                        if (primitiveMaterial.normalTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.normalTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.normal_texture = images[imageIndex];
+                            material.pbr_parameters.has_normal_texture = 1;
+                            material.pbr_parameters.scale = primitiveMaterial.normalTexture.scale;
+                        }
+                        else
+                        {
+                            material.normal_texture = defaultTexture;
+                            material.pbr_parameters.has_normal_texture = 0;
+                        }
+
+                        if (primitiveMaterial.occlusionTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.occlusionTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.occlusion_texture = images[imageIndex];
+                            material.pbr_parameters.has_occlusion_texture = 1;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+                        else
+                        {
+                            material.occlusion_texture = defaultTexture;
+                            material.pbr_parameters.has_occlusion_texture = 0;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+
+                        if (primitiveMaterial.emissiveTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.emissiveTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.emissive_texture = images[imageIndex];
+                            material.pbr_parameters.has_emissive_texture = 1;
+                        }
+                        else
+                        {
+                            material.emissive_texture = defaultTexture;
+                            material.pbr_parameters.has_emissive_texture = 0;
+                            auto color = primitiveMaterial.emissiveFactor;
+                            material.pbr_parameters.emissive_factor = { color[0], color[1], color[2] };
+                        }
+
+                        material.pbr_parameters.alpha_cut_off = primitiveMaterial.alphaCutoff;
+                        material.pbr_parameters.alpha_mode = 0.f;//static_cast<float>(primitiveMaterial.alphaMode);
+                    }
+                    else
+                    {
+                        // TODO: USE SPECIFIC TEXTURE FOR METALLIC AND NORMAL
+                        material.base_color_texture = defaultTexture;
+                        material.metallic_roughness_texture = defaultTexture;
+                        material.normal_texture = defaultTexture;
+                        material.occlusion_texture = defaultTexture;
+                        material.emissive_texture = defaultTexture;
+                    }
+
+                    VkDescriptorImageInfo baseColorImageInfo = material.base_color_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo metallicRoughnessImageInfo = material.metallic_roughness_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo normalImageInfo = material.normal_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo occlusionImageInfo = material.occlusion_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo emissiveImageInfo = material.emissive_texture->getDescriptorImageInfo();
+
+                    VtDescriptorWriter(materialSetLayout, descriptorPool)
+                        .writeImage(0, &baseColorImageInfo)
+                        .writeImage(1, &metallicRoughnessImageInfo)
+                        .writeImage(2, &normalImageInfo)
+                        .writeImage(3, &occlusionImageInfo)
+                        .writeImage(4, &emissiveImageInfo)
+                        .build(material.descriptor_set);
+
+                    /*Material material{};
                     if (GltfPrimitive.material != -1)
                     {
                         tinygltf::Material& GltfPrimitiveMaterial = GltfModel.materials[GltfPrimitive.material];
@@ -339,7 +444,7 @@ namespace vt
                         .writeImage(0, &albedo_info)
                         .writeImage(1, &normal_info)
                         .writeImage(2, &metallicRoughness_info)
-                        .build(material.descriptorSet);
+                        .build(material.descriptorSet);*/
 
                     Primitive primitive{};
                     primitive.firstVertex = vertexOffset;

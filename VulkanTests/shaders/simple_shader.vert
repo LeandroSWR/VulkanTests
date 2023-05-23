@@ -1,16 +1,14 @@
 #version 450
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 color;
-layout (location = 2) in vec3 normal;
-layout (location = 3) in vec4 tangent;
-layout (location = 4) in vec2 uv;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec4 tangent;
+layout (location = 3) in vec2 uv;
 
-layout (location = 0) out vec3 fragColor;
-layout (location = 1) out vec3 fragPosWorld;
-layout (location = 2) out vec3 fragNormalWorld;
-layout (location = 3) out vec2 fragUV;
-layout (location = 4) out vec4 fragTangent;
+layout (location = 0) out vec3 fragPosWorld;
+layout (location = 1) out vec3 fragNormalWorld;
+layout (location = 2) out vec2 fragUV;
+layout (location = 3) out vec4 fragTangent;
 
 struct PointLight 
 {
@@ -45,6 +43,5 @@ void main() {
 	fragTangent = vec4(m3_model * tangent.xyz, tangent.w);
 
 	fragPosWorld = positionWorld.xyz;
-	fragColor = color;
 	fragUV = uv;
 }

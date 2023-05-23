@@ -22,6 +22,8 @@ namespace vt
 		VkImageView getImageView() { return imageView; }
 		VkImageLayout getImageLayout() { return imageLayout; }
 
+		VkDescriptorImageInfo getDescriptorImageInfo();
+
 	private:
 		void transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout);
 		void generateMipmaps();

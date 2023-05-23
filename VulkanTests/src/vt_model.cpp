@@ -34,7 +34,7 @@ namespace std
         size_t operator()(vt::VtModel::Vertex const& vertex) const
         {
             size_t seed = 0;
-            vt::hashCombine(seed, vertex.position, vertex.color, vertex.normal, vertex.uv);
+            vt::hashCombine(seed, vertex.position, vertex.normal, vertex.uv);
             return seed;
         }
     };
@@ -144,10 +144,9 @@ namespace vt
     {
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
         attributeDescriptions.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position) });
-        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color) });
-        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
-        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
-        attributeDescriptions.push_back({ 4, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
+        attributeDescriptions.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal) });
+        attributeDescriptions.push_back({ 2, 0, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(Vertex, tangent) });
+        attributeDescriptions.push_back({ 3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv) });
 
         return attributeDescriptions;
     }
@@ -223,7 +222,6 @@ namespace vt
                     {
                         Vertex vertex{};
                         vertex.position = glm::make_vec3(&positionBuffer[v * 3]);
-                        vertex.color = glm::vec3(1.0);
                         vertex.normal = glm::normalize(
                             glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                         vertex.tangent = glm::vec4(

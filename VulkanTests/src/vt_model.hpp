@@ -66,7 +66,6 @@ namespace vt {
 
 		struct Vertex {
 			glm::vec3 position{};
-			glm::vec3 color{};
 			glm::vec3 normal{};
 			glm::vec4 tangent{};
 			glm::vec2 uv{};
@@ -76,7 +75,7 @@ namespace vt {
 
 			bool operator==(const Vertex& other) const
 			{
-				return position == other.position && color == other.color && normal == other.normal && uv == other.uv;
+				return position == other.position && normal == other.normal && uv == other.uv;
 			}
 		};
 

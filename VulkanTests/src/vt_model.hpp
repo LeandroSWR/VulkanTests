@@ -18,6 +18,35 @@
 namespace vt {
 	class VtModel {
 	public:
+		struct PBRParameters
+		{
+			glm::vec4 base_color_factor = { 1.0, 1.0, 1.0, 1.0 };
+			glm::vec3 emissive_factor = { 1.0, 1.0, 1.0 };
+			float metallic_factor = 1.0;
+			float roughness_factor = 1.0;
+			float scale = 1.0;
+			float strength = 1.0;
+			float alpha_cut_off = 1.0;
+			float alpha_mode = 1.0;
+
+			int has_base_color_texture = 0;
+			int has_metallic_roughness_texture = 0;
+			int has_normal_texture = 0;
+			int has_occlusion_texture = 0;
+			int has_emissive_texture = 0;
+		};
+
+		struct PBRMaterial
+		{
+			std::shared_ptr<Texture> base_color_texture;
+			std::shared_ptr<Texture> metallic_roughness_texture;
+			std::shared_ptr<Texture> normal_texture;
+			std::shared_ptr<Texture> occlusion_texture;
+			std::shared_ptr<Texture> emissive_texture;
+			PBRParameters pbr_parameters = {};
+			VkDescriptorSet descriptor_set = {};
+		};
+
 		struct Material
 		{
 			std::shared_ptr<Texture> albedoTexture;

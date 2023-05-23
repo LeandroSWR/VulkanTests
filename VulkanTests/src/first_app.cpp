@@ -75,12 +75,13 @@ namespace vt
 			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.addBinding(3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.addBinding(4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.build();
 
 		std::vector<VkDescriptorSet> globalDescriptorSets(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < globalDescriptorSets.size(); i++)
 		{
-			auto bufferInfo = uboBuffers[i]->descriptorInfo();
+			auto bufferInfo = uboBuffers[i]->getDescriptorInfo();
 			VtDescriptorWriter(*globalSetLayout, *globalPool)
 				.writeBuffer(0, &bufferInfo)
 				.writeImage(1, &imageInfo)
@@ -166,7 +167,7 @@ namespace vt
 
 	void FirstApp::loadGameObjects()
 	{
-        //std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
+		//std::shared_ptr<VtModel> vtModel = VtModel::createModelFromFile(vtDevice, "models/normal_cube.fbx");
 
         /*auto vikingRoom = VtGameObject::createGameObject();
 		vikingRoom.model = vtModel;

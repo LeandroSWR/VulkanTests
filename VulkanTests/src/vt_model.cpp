@@ -46,17 +46,19 @@ namespace vt
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertexCount;
         uint32_t vertexSize = sizeof(vertices[0]);
 
-        VtBuffer stagingBuffer{ vtDevice,
-                             vertexSize,
-                             vertexCount,
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        VtBuffer stagingBuffer{
+            vtDevice,
+            vertexSize,
+            vertexCount,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         };
 
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void*)vertices.data());
 
-        vertexBuffer = std::make_unique<VtBuffer>(vtDevice,
+        vertexBuffer = std::make_unique<VtBuffer>(
+            vtDevice,
             vertexSize,
             vertexCount,
             VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
@@ -78,22 +80,23 @@ namespace vt
         VkDeviceSize bufferSize = sizeof(indices[0]) * indexCount;
         uint32_t indexSize = sizeof(indices[0]);
 
-        VtBuffer stagingBuffer{ vtDevice,
-                             indexSize,
-                             indexCount,
-                             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+        VtBuffer stagingBuffer{
+            vtDevice,
+            indexSize,
+            indexCount,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
         };
 
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void*)indices.data());
 
-        indexBuffer = std::make_unique<VtBuffer>(vtDevice,
+        indexBuffer = std::make_unique<VtBuffer>(
+            vtDevice,
             indexSize,
             indexCount,
             VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-            );
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         vtDevice.copyBuffer(stagingBuffer.getBuffer(), indexBuffer->getBuffer(), bufferSize);
     }
@@ -305,11 +308,33 @@ namespace vt
                     material.emissive_texture = defaultTexture;
                 }
 
+                VtBuffer stagingBuffer{
+                    vtDevice,
+                    sizeof(PBRParameters),
+                    1,
+                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                };
+
+                stagingBuffer.map();
+                stagingBuffer.writeToBuffer(&material.pbr_parameters);
+
+                material.pbr_parameters_buffer = std::make_unique<VtBuffer>(
+                    vtDevice,
+                    sizeof(PBRParameters),
+                    1,
+                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+                );
+
+                vtDevice.copyBuffer(stagingBuffer.getBuffer(), material.pbr_parameters_buffer->getBuffer(), sizeof(PBRParameters));
+
                 VkDescriptorImageInfo baseColorImageInfo = material.base_color_texture->getDescriptorImageInfo();
                 VkDescriptorImageInfo metallicRoughnessImageInfo = material.metallic_roughness_texture->getDescriptorImageInfo();
                 VkDescriptorImageInfo normalImageInfo = material.normal_texture->getDescriptorImageInfo();
                 VkDescriptorImageInfo occlusionImageInfo = material.occlusion_texture->getDescriptorImageInfo();
                 VkDescriptorImageInfo emissiveImageInfo = material.emissive_texture->getDescriptorImageInfo();
+                VkDescriptorBufferInfo pbrParametersBufferInfo = material.pbr_parameters_buffer->getDescriptorInfo();
 
                 VtDescriptorWriter(materialSetLayout, descriptorPool)
                     .writeImage(0, &baseColorImageInfo)
@@ -317,6 +342,7 @@ namespace vt
                     .writeImage(2, &normalImageInfo)
                     .writeImage(3, &occlusionImageInfo)
                     .writeImage(4, &emissiveImageInfo)
+                    .writeBuffer(5, &pbrParametersBufferInfo)
                     .build(material.descriptor_set);
 
                 for (size_t v = 0; v < vertexCount; v++)

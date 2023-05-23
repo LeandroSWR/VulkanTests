@@ -141,7 +141,7 @@ namespace vt {
      *
      * @return VkDescriptorBufferInfo of specified offset and range
      */
-    VkDescriptorBufferInfo VtBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
+    VkDescriptorBufferInfo VtBuffer::getDescriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
         return VkDescriptorBufferInfo{
             buffer,
             offset,
@@ -175,8 +175,8 @@ namespace vt {
      *
      * @return VkDescriptorBufferInfo for instance at index
      */
-    VkDescriptorBufferInfo VtBuffer::descriptorInfoForIndex(int index) {
-        return descriptorInfo(alignmentSize, index * alignmentSize);
+    VkDescriptorBufferInfo VtBuffer::getDescriptorInfoForIndex(int index) {
+        return getDescriptorInfo(alignmentSize, index * alignmentSize);
     }
 
     /**

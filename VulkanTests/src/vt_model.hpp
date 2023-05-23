@@ -44,6 +44,7 @@ namespace vt {
 			std::shared_ptr<Texture> occlusion_texture;
 			std::shared_ptr<Texture> emissive_texture;
 			PBRParameters pbr_parameters = {};
+			std::shared_ptr<VtBuffer> pbr_parameters_buffer = {};
 			VkDescriptorSet descriptor_set = {};
 		};
 

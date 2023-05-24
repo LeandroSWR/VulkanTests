@@ -301,6 +301,7 @@ namespace vt
                 }
                 else
                 {
+                    // TODO: USE SPECIFIC TEXTURE FOR METALLIC AND NORMAL
                     material.base_color_texture = defaultTexture;
                     material.metallic_roughness_texture = defaultTexture;
                     material.normal_texture = defaultTexture;

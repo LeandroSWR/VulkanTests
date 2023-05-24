@@ -103,7 +103,7 @@ namespace vt
 		auto floor = VtGameObject::createGameObject();
 		floor.model = lveModel;
 		floor.transform.translation = { 0.f, 0.f, 0.f };
-		floor.transform.scale = { .1f, .1f, .1f };
+		floor.transform.scale = { .01f, .01f, .01f };
 		floor.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
 		gameObjects.emplace(floor.getId(), std::move(floor));
 
@@ -188,13 +188,13 @@ namespace vt
 
 		for (int i = 0; i < lightColors.size(); i++)
 		{
-			auto pointLight = VtGameObject::makePointLight(0.2f);
+			auto pointLight = VtGameObject::makePointLight(10.f);
 			pointLight.color = lightColors[i];
 			auto rotateLight = glm::rotate(
-				glm::mat4(1.f),
+				glm::mat4(0.8f),
 				(i * glm::two_pi<float>()) / lightColors.size(),
 				{ 0.f, -1.f, 0.f });
-			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, -0.02f, -1.f, 1.f));
+			pointLight.transform.translation = glm::vec3(rotateLight * glm::vec4(-1.f, 1.0f, -1.f, 1.f));
 			gameObjects.emplace(pointLight.getId(), std::move(pointLight));
 		}
 	}

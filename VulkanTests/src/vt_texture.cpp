@@ -3,7 +3,6 @@
 #include "vt_buffer.hpp"
 
 #include <vulkan/vulkan_core.h>
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #include <stdexcept>

@@ -17,11 +17,11 @@
 #include <filesystem>
 #include <iostream>
 
-#include <fx/gltf.h>
-
-#ifndef ENGINE_DIR
-#define ENGINE_DIR ""
-#endif
+#define TINYGLTF_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#define TINYGLTF_NO_STB_IMAGE_WRITE
+#define STBI_MSC_SECURE_CRT
+#include <tiny_gltf.h>
 
 namespace std
 {
@@ -155,242 +155,100 @@ namespace vt
 
     VtModel::VtModel(VtDevice& device, const std::string& filepath, VtDescriptorSetLayout& materialSetLayout, VtDescriptorPool& descriptorPool) : vtDevice{ device }
     {
-        fx::gltf::Document doc = fx::gltf::LoadFromText(filepath);
-        std::filesystem::path path = std::filesystem::path(filepath);
-
-        for (auto& image : doc.images)
+        std::string warn, err;
+        tinygltf::TinyGLTF GltfLoader;
+        tinygltf::Model GltfModel;
+        if (!GltfLoader.LoadASCIIFromFile(&GltfModel, &err, &warn, filepath))
         {
-            images.push_back(std::make_shared<Texture>(vtDevice, path.parent_path().append(image.uri).generic_string()));
+            throw std::runtime_error("failed to load gltf file!");
         }
 
-        uint32_t vertexOffset = 0;
-        uint32_t indexOffset = 0;
-
-        for (auto& mesh : doc.meshes)
+        auto path = std::filesystem::path{ filepath };
+        for (auto& image : GltfModel.images)
         {
-            for (auto& primitive : mesh.primitives)
+            images.push_back(std::make_shared<Texture>(device, path.parent_path().append(image.uri).generic_string()));
+        }
+
+        for (auto& scene : GltfModel.scenes)
+        {
+            for (size_t i = 0; i < scene.nodes.size(); i++)
             {
-                uint32_t vertexCount = 0;
-                uint32_t indexCount = 0;
-
-                const float* positionBuffer = nullptr;
-                const float* normalsBuffer = nullptr;
-                const float* texCoordsBuffer = nullptr;
-                const float* tangentsBuffer = nullptr;
-
-                for (auto const& attribute : primitive.attributes)
+                auto& node = GltfModel.nodes[i];
+                uint32_t vertexOffset = 0;
+                uint32_t indexOffset = 0;
+                for (auto& GltfPrimitive : GltfModel.meshes[node.mesh].primitives)
                 {
-                    if (attribute.first == "POSITION")
+                    uint32_t vertexCount = 0;
+                    uint32_t indexCount = 0;
+                    const float* positionBuffer = nullptr;
+                    const float* normalsBuffer = nullptr;
+                    const float* texCoordsBuffer = nullptr;
+                    const float* tangentsBuffer = nullptr;
+                    if (GltfPrimitive.attributes.find("POSITION") != GltfPrimitive.attributes.end())
                     {
-                        const fx::gltf::Accessor& accessor = doc.accessors[primitive.attributes.find(
-                            "POSITION")->second];
-                        const fx::gltf::BufferView& view = doc.bufferViews[accessor.bufferView];
-                        positionBuffer = reinterpret_cast<const float*>(&(doc.buffers[view.buffer].data[
-                            accessor.byteOffset + view.byteOffset]));
+                        const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("POSITION")->second];
+                        const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+                        positionBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                         vertexCount = accessor.count;
                     }
-
-                    if (attribute.first == "NORMAL")
+                    if (GltfPrimitive.attributes.find("NORMAL") != GltfPrimitive.attributes.end())
                     {
-                        const fx::gltf::Accessor& accessor = doc.accessors[primitive.attributes.find("NORMAL")->second];
-                        const fx::gltf::BufferView& view = doc.bufferViews[accessor.bufferView];
-                        normalsBuffer = reinterpret_cast<const float*>(&(doc.buffers[view.buffer].data[
-                            accessor.byteOffset + view.byteOffset]));
+                        const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("NORMAL")->second];
+                        const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+                        normalsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    }
+                    if (GltfPrimitive.attributes.find("TEXCOORD_0") != GltfPrimitive.attributes.end())
+                    {
+                        const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("TEXCOORD_0")->second];
+                        const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+                        texCoordsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
+                    }
+                    if (GltfPrimitive.attributes.find("TANGENT") != GltfPrimitive.attributes.end())
+                    {
+                        const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.attributes.find("TANGENT")->second];
+                        const tinygltf::BufferView& view = GltfModel.bufferViews[accessor.bufferView];
+                        tangentsBuffer = reinterpret_cast<const float*>(&(GltfModel.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
                     }
 
-                    if (attribute.first == "TEXCOORD_0")
+                    for (size_t i = 0; i < vertexCount; i++)
                     {
-                        const fx::gltf::Accessor& accessor = doc.accessors[primitive.attributes.find(
-                            "TEXCOORD_0")->second];
-                        const fx::gltf::BufferView& view = doc.bufferViews[accessor.bufferView];
-                        texCoordsBuffer = reinterpret_cast<const float*>(&(doc.buffers[view.buffer].data[
-                            accessor.byteOffset + view.byteOffset]));
+                        Vertex vertex{};
+                        vertex.position = glm::make_vec3(&positionBuffer[i * 3]);
+                        vertex.normal = glm::normalize(
+                            glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[i * 3]) : glm::vec3(0.0f)));
+                        vertex.tangent = glm::vec4(
+                            tangentsBuffer ? glm::make_vec4(&tangentsBuffer[i * 4]) : glm::vec4(0.0f));;
+                        vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[i * 2]) : glm::vec2(0.0f);
+                        vertices.push_back(vertex);
                     }
 
-                    if (attribute.first == "TANGENT")
-                    {
-                        const fx::gltf::Accessor& accessor = doc.accessors[primitive.attributes.find(
-                            "TANGENT")->second];
-                        const fx::gltf::BufferView& view = doc.bufferViews[accessor.bufferView];
-                        tangentsBuffer = reinterpret_cast<const float*>(&(doc.buffers[view.buffer].data[
-                            accessor.byteOffset + view.byteOffset]));
-                    }
-                }
-
-                std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");
-
-                PBRMaterial material = {};
-                if (primitive.material != -1)
-                {
-                    fx::gltf::Material& primitiveMaterial = doc.materials[primitive.material];
-                    if (!primitiveMaterial.pbrMetallicRoughness.baseColorTexture.empty())
-                    {
-                        uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;
-                        uint32_t imageIndex = doc.textures[textureIndex].source;
-                        material.base_color_texture = images[imageIndex];
-                        material.pbr_parameters.has_base_color_texture = 1;
-                    }
-                    else
-                    {
-                        material.base_color_texture = defaultTexture;
-                        material.pbr_parameters.has_base_color_texture = 0;
-                        auto color = primitiveMaterial.pbrMetallicRoughness.baseColorFactor;
-                        material.pbr_parameters.base_color_factor = { color[0], color[1], color[2], color[3] };
-                    }
-
-                    if (!primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.empty())
-                    {
-                        uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;
-                        uint32_t imageIndex = doc.textures[textureIndex].source;
-                        material.metallic_roughness_texture = images[imageIndex];
-                        material.pbr_parameters.has_metallic_roughness_texture = 1;
-                    }
-                    else
-                    {
-                        material.metallic_roughness_texture = defaultTexture;
-                        material.pbr_parameters.has_metallic_roughness_texture = 0;
-                        material.pbr_parameters.metallic_factor = primitiveMaterial.pbrMetallicRoughness.metallicFactor;
-                        material.pbr_parameters.roughness_factor = primitiveMaterial.pbrMetallicRoughness.roughnessFactor;
-                    }
-
-                    if (!primitiveMaterial.normalTexture.empty())
-                    {
-                        uint32_t textureIndex = primitiveMaterial.normalTexture.index;
-                        uint32_t imageIndex = doc.textures[textureIndex].source;
-                        material.normal_texture = images[imageIndex];
-                        material.pbr_parameters.has_normal_texture = 1;
-                        material.pbr_parameters.scale = primitiveMaterial.normalTexture.scale;
-                    }
-                    else
-                    {
-                        material.normal_texture = defaultTexture;
-                        material.pbr_parameters.has_normal_texture = 0;
-                    }
-
-                    if (!primitiveMaterial.occlusionTexture.empty())
-                    {
-                        uint32_t textureIndex = primitiveMaterial.occlusionTexture.index;
-                        uint32_t imageIndex = doc.textures[textureIndex].source;
-                        material.occlusion_texture = images[imageIndex];
-                        material.pbr_parameters.has_occlusion_texture = 1;
-                    }
-                    else
-                    {
-                        material.occlusion_texture = defaultTexture;
-                        material.pbr_parameters.has_occlusion_texture = 0;
-                        material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
-                    }
-
-                    if (!primitiveMaterial.emissiveTexture.empty())
-                    {
-                        uint32_t textureIndex = primitiveMaterial.emissiveTexture.index;
-                        uint32_t imageIndex = doc.textures[textureIndex].source;
-                        material.emissive_texture = images[imageIndex];
-                        material.pbr_parameters.has_emissive_texture = 1;
-                    }
-                    else
-                    {
-                        material.emissive_texture = defaultTexture;
-                        material.pbr_parameters.has_emissive_texture = 0;
-                        auto color = primitiveMaterial.emissiveFactor;
-                        material.pbr_parameters.emissive_factor = { color[0], color[1], color[2] };
-                    }
-
-                    material.pbr_parameters.alpha_cut_off = primitiveMaterial.alphaCutoff;
-                    material.pbr_parameters.alpha_mode = static_cast<float>(primitiveMaterial.alphaMode);
-                }
-                else
-                {
-                    // TODO: USE SPECIFIC TEXTURE FOR METALLIC AND NORMAL
-                    material.base_color_texture = defaultTexture;
-                    material.metallic_roughness_texture = defaultTexture;
-                    material.normal_texture = defaultTexture;
-                    material.occlusion_texture = defaultTexture;
-                    material.emissive_texture = defaultTexture;
-                }
-
-                VtBuffer stagingBuffer{
-                    vtDevice,
-                    sizeof(PBRParameters),
-                    1,
-                    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-                };
-
-                stagingBuffer.map();
-                stagingBuffer.writeToBuffer(&material.pbr_parameters);
-
-                material.pbr_parameters_buffer = std::make_unique<VtBuffer>(
-                    vtDevice,
-                    sizeof(PBRParameters),
-                    1,
-                    VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-                );
-
-                vtDevice.copyBuffer(stagingBuffer.getBuffer(), material.pbr_parameters_buffer->getBuffer(), sizeof(PBRParameters));
-
-                VkDescriptorImageInfo baseColorImageInfo = material.base_color_texture->getDescriptorImageInfo();
-                VkDescriptorImageInfo metallicRoughnessImageInfo = material.metallic_roughness_texture->getDescriptorImageInfo();
-                VkDescriptorImageInfo normalImageInfo = material.normal_texture->getDescriptorImageInfo();
-                VkDescriptorImageInfo occlusionImageInfo = material.occlusion_texture->getDescriptorImageInfo();
-                VkDescriptorImageInfo emissiveImageInfo = material.emissive_texture->getDescriptorImageInfo();
-                VkDescriptorBufferInfo pbrParametersBufferInfo = material.pbr_parameters_buffer->getDescriptorInfo();
-
-                VtDescriptorWriter(materialSetLayout, descriptorPool)
-                    .writeImage(0, &baseColorImageInfo)
-                    .writeImage(1, &metallicRoughnessImageInfo)
-                    .writeImage(2, &normalImageInfo)
-                    .writeImage(3, &occlusionImageInfo)
-                    .writeImage(4, &emissiveImageInfo)
-                    .writeBuffer(5, &pbrParametersBufferInfo)
-                    .build(material.descriptor_set);
-
-                for (size_t v = 0; v < vertexCount; v++)
-                {
-                    Vertex vertex{};
-                    vertex.position = glm::make_vec3(&positionBuffer[v * 3]);
-                    vertex.normal = glm::normalize(
-                        glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-                    vertex.tangent = glm::vec4(
-                        tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f));;
-                    vertex.uv = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
-                    vertices.push_back(vertex);
-                }
-
-                {
-                    const fx::gltf::Accessor& accessor = doc.accessors[primitive.indices];
-                    const fx::gltf::BufferView& bufferView = doc.bufferViews[accessor.bufferView];
-                    const fx::gltf::Buffer& buffer = doc.buffers[bufferView.buffer];
-
+                    const tinygltf::Accessor& accessor = GltfModel.accessors[GltfPrimitive.indices];
+                    const tinygltf::BufferView& bufferView = GltfModel.bufferViews[accessor.bufferView];
+                    const tinygltf::Buffer& buffer = GltfModel.buffers[bufferView.buffer];
                     indexCount += static_cast<uint32_t>(accessor.count);
-
                     switch (accessor.componentType)
                     {
-                    case fx::gltf::Accessor::ComponentType::UnsignedInt:
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT:
                     {
-                        const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset +
-                            bufferView.byteOffset]);
+                        const uint32_t* buf = reinterpret_cast<const uint32_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                         for (size_t index = 0; index < accessor.count; index++)
                         {
                             indices.push_back(buf[index]);
                         }
                         break;
                     }
-                    case fx::gltf::Accessor::ComponentType::UnsignedShort:
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT:
                     {
-                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset +
-                            bufferView.byteOffset]);
+                        const uint16_t* buf = reinterpret_cast<const uint16_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                         for (size_t index = 0; index < accessor.count; index++)
                         {
                             indices.push_back(buf[index]);
                         }
                         break;
                     }
-                    case fx::gltf::Accessor::ComponentType::UnsignedByte:
+                    case TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE:
                     {
-                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset +
-                            bufferView.byteOffset]);
+                        const uint8_t* buf = reinterpret_cast<const uint8_t*>(&buffer.data[accessor.byteOffset + bufferView.byteOffset]);
                         for (size_t index = 0; index < accessor.count; index++)
                         {
                             indices.push_back(buf[index]);
@@ -398,25 +256,155 @@ namespace vt
                         break;
                     }
                     default:
+                        std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
                         return;
                     }
+
+                    std::shared_ptr<Texture> defaultTexture = std::make_shared<Texture>(vtDevice, "textures/white.png");
+                    std::shared_ptr<Texture> defaultNormalTexture = std::make_shared<Texture>(vtDevice, "textures/normal.png");
+                    std::shared_ptr<Texture> defaultMetallicRoughnessTexture = std::make_shared<Texture>(vtDevice, "textures/metallicRoughness.png");
+
+                    PBRMaterial material = {};
+                    if (GltfPrimitive.material != -1)
+                    {
+                        tinygltf::Material& primitiveMaterial = GltfModel.materials[GltfPrimitive.material];
+                        if (primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.baseColorTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                          // Get the image index
+                            material.base_color_texture = images[imageIndex];                                       // Set Base Color Texture
+                            material.pbr_parameters.has_base_color_texture = 1;                                     // Set Has_Base_Color Parameter
+                        }
+                        else
+                        {
+                            material.base_color_texture = defaultTexture;
+                            material.pbr_parameters.has_base_color_texture = 0;
+                            auto color = primitiveMaterial.pbrMetallicRoughness.baseColorFactor;
+                            material.pbr_parameters.base_color_factor = { color[0], color[1], color[2], color[3] };
+                        }
+
+                        if (primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.pbrMetallicRoughness.metallicRoughnessTexture.index;  // Get the texture index
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;                                  // Get the image index
+                            material.metallic_roughness_texture = images[imageIndex];                                       // Set Base Color Texture
+                            material.pbr_parameters.has_metallic_roughness_texture = 1;                                     // Set Has_Base_Color Parameter
+                        }
+                        else
+                        {
+                            material.metallic_roughness_texture = defaultMetallicRoughnessTexture;
+                            material.pbr_parameters.has_metallic_roughness_texture = 0;
+                            material.pbr_parameters.metallic_factor = primitiveMaterial.pbrMetallicRoughness.metallicFactor;
+                            material.pbr_parameters.roughness_factor = primitiveMaterial.pbrMetallicRoughness.roughnessFactor;
+                        }
+
+                        if (primitiveMaterial.normalTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.normalTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.normal_texture = images[imageIndex];
+                            material.pbr_parameters.has_normal_texture = 1;
+                            material.pbr_parameters.scale = primitiveMaterial.normalTexture.scale;
+                        }
+                        else
+                        {
+                            material.normal_texture = defaultNormalTexture;
+                            material.pbr_parameters.has_normal_texture = 0;
+                        }
+
+                        if (primitiveMaterial.occlusionTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.occlusionTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.occlusion_texture = images[imageIndex];
+                            material.pbr_parameters.has_occlusion_texture = 1;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+                        else
+                        {
+                            material.occlusion_texture = defaultTexture;
+                            material.pbr_parameters.has_occlusion_texture = 0;
+                            material.pbr_parameters.strength = primitiveMaterial.occlusionTexture.strength;
+                        }
+
+                        if (primitiveMaterial.emissiveTexture.index != -1)
+                        {
+                            uint32_t textureIndex = primitiveMaterial.emissiveTexture.index;
+                            uint32_t imageIndex = GltfModel.textures[textureIndex].source;
+                            material.emissive_texture = images[imageIndex];
+                            material.pbr_parameters.has_emissive_texture = 1;
+                        }
+                        else
+                        {
+                            material.emissive_texture = defaultTexture;
+                            material.pbr_parameters.has_emissive_texture = 0;
+                            auto color = primitiveMaterial.emissiveFactor;
+                            material.pbr_parameters.emissive_factor = { color[0], color[1], color[2] };
+                        }
+
+                        material.pbr_parameters.alpha_cut_off = primitiveMaterial.alphaCutoff;
+                        material.pbr_parameters.alpha_mode = 0.f;//static_cast<float>(primitiveMaterial.alphaMode);
+                    }
+                    else
+                    {
+                        // TODO: USE SPECIFIC TEXTURE FOR METALLIC AND NORMAL
+                        material.base_color_texture = defaultTexture;
+                        material.metallic_roughness_texture = defaultMetallicRoughnessTexture;
+                        material.normal_texture = defaultNormalTexture;
+                        material.occlusion_texture = defaultTexture;
+                        material.emissive_texture = defaultTexture;
+                    }
+
+                    VtBuffer stagingBuffer{
+                        vtDevice,
+                        sizeof(PBRParameters),
+                        1,
+                        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+                    };
+
+                    stagingBuffer.map();
+                    stagingBuffer.writeToBuffer(&material.pbr_parameters);
+
+                    material.pbr_parameters_buffer = std::make_unique<VtBuffer>(
+                        vtDevice,
+                        sizeof(PBRParameters),
+                        1,
+                        VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+                        );
+
+                    vtDevice.copyBuffer(stagingBuffer.getBuffer(), material.pbr_parameters_buffer->getBuffer(), sizeof(PBRParameters));
+
+                    VkDescriptorImageInfo baseColorImageInfo = material.base_color_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo metallicRoughnessImageInfo = material.metallic_roughness_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo normalImageInfo = material.normal_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo occlusionImageInfo = material.occlusion_texture->getDescriptorImageInfo();
+                    VkDescriptorImageInfo emissiveImageInfo = material.emissive_texture->getDescriptorImageInfo();
+                    VkDescriptorBufferInfo pbrParametersBufferInfo = material.pbr_parameters_buffer->getDescriptorInfo();
+
+                    VtDescriptorWriter(materialSetLayout, descriptorPool)
+                        .writeImage(0, &baseColorImageInfo)
+                        .writeImage(1, &metallicRoughnessImageInfo)
+                        .writeImage(2, &normalImageInfo)
+                        .writeImage(3, &occlusionImageInfo)
+                        .writeImage(4, &emissiveImageInfo)
+                        .writeBuffer(5, &pbrParametersBufferInfo)
+                        .build(material.descriptor_set);
+
+                    Primitive primitive{};
+                    primitive.firstVertex = vertexOffset;
+                    primitive.vertexCount = vertexCount;
+                    primitive.indexCount = indexCount;
+                    primitive.firstIndex = indexOffset;
+                    primitive.material = material;
+                    primitives.push_back(primitive);
+                    vertexOffset += vertexCount;
+                    indexOffset += indexCount;
                 }
-
-                Primitive mesh_primitive{};
-                mesh_primitive.firstVertex = vertexOffset;
-                mesh_primitive.vertexCount = vertexCount;
-                mesh_primitive.indexCount = indexCount;
-                mesh_primitive.firstIndex = indexOffset;
-                mesh_primitive.material = std::move(material);
-                primitives.push_back(mesh_primitive);
-
-                vertexOffset += vertexCount;
-                indexOffset += indexCount;
-
             }
+            createVertexBuffers(vertices);
+            createIndexBuffers(indices);
         }
-
-        createVertexBuffers(vertices);
-        createIndexBuffers(indices);
     }
 }

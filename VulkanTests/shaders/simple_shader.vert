@@ -5,7 +5,7 @@ layout (location = 1) in vec3 normal;
 layout (location = 2) in vec4 tangent;
 layout (location = 3) in vec2 uv;
 
-layout (location = 0) out vec3 fragPosWorld;
+layout (location = 0) out vec3 fragPosition;
 layout (location = 1) out vec2 fragUV;
 layout (location = 2) out vec3 fragNormal;
 layout (location = 3) out vec4 fragTangent;
@@ -40,8 +40,8 @@ void main() {
 	mat3 m3_model = mat3(push.modelMatrix);
 
 	// Set the TBN matrix in world space
-	fragNormal = normalize(m3_model * normal);
-	fragTangent = vec4(normalize(m3_model * tangent.xyz), tangent.w);
+	fragNormal = normalize((push.modelMatrix * vec4(normal, 0.0)).xyz);
+	fragTangent = vec4(m3_model * tangent.xyz, tangent.w);
 
 	vec4 tangents = normalize(push.modelMatrix * tangent.xyzw);
 	vec3 N = normalize(m3_model * normal);

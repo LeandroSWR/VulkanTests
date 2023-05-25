@@ -1,7 +1,7 @@
 #version 450
 #extension GL_KHR_vulkan_glsl: enable
 
-layout (location = 0) in vec3 fragPosWorld;
+layout (location = 0) in vec3 fragPosition;
 layout (location = 1) in vec2 fragUV;
 layout (location = 2) in vec3 fragNormal;
 layout (location = 3) in vec4 fragTangent;
@@ -63,6 +63,12 @@ vec3 getSurfaceNormal() {
     return normalize(TBN * tangentNormal);
 }
 
+// Convert Srgb to Linear
+vec4 SRGBtoLINEAR(vec4 srgbIn) {
+	vec3 linOut = pow(srgbIn.xyz, vec3(2.2));
+	return vec4(linOut, srgbIn.w);
+}
+
 // Distribution function for GGX specular term
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a = roughness*roughness;
@@ -111,8 +117,9 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
 void main() 
 {
 	// Retrieve material properties from textures and parameters
-	vec3 albedo = pow(texture(albedoMap, fragUV).rgb, vec3(2.2));
-	vec3 emissive = pow(texture(emissiveMap, fragUV).rgb, vec3(2.2));
+
+	vec4 albedo = texture(albedoMap, fragUV);
+	vec3 emissive = texture(emissiveMap, fragUV).rgb;
 	float metallic = texture(metallicRoughnessMap, fragUV).b;
 	float roughness = texture(metallicRoughnessMap, fragUV).g;
 	float ao = texture(occlusionMap, fragUV).r;
@@ -124,14 +131,15 @@ void main()
 	vec3 surfaceNormal = getSurfaceNormal();
 
 	// Calculate the view vector
-	vec3 viewVector = normalize(ubo.inverseView[3].xyz - fragPosWorld);
+	vec3 viewVector = normalize(ubo.inverseView[3].xyz - fragPosition);
 
 	// Calculate the reflection vector
 	vec3 reflectionVector = reflect(-viewVector, surfaceNormal);
 
 	// Calculate the fresnell term
 	vec3 F0 = vec3(0.04);
-	F0 = mix(F0, albedo, metallic);
+	vec3 diffuseColor = albedo.rgb;
+	F0 = mix(F0, diffuseColor, metallic);
 
 	// Initialize the outgoing light color
 	vec3 Lo = vec3(0.0);
@@ -139,9 +147,9 @@ void main()
 	// TODO: Calculate the lighting contribution here
 	for (int i = 0; i < ubo.numLights; i++) {
 		PointLight light = ubo.pointLights[i];								// Reference to the current point light
-		vec3 lightDirection = normalize(light.position.xyz - fragPosWorld);	// Calculate the direction from the surface point to the light source
+		vec3 lightDirection = normalize(light.position.xyz - fragPosition);	// Calculate the direction from the surface point to the light source
 		vec3 H = normalize(viewVector + lightDirection);					// Calculate the halfway vector between the view vector and the light vector
-		float distance = length(light.position.xyz - fragPosWorld);			// Calculate the distance between the light source and the surface point
+		float distance = length(light.position.xyz - fragPosition);			// Calculate the distance between the light source and the surface point
 		float attenuation = 1.0 / (distance * distance);					// Calculate the attenuation factor based on the distance
 		vec3 intensity = light.color.xyz * light.color.w * attenuation;		// Calculate the intensity of the light
 		vec3 radiance = light.color.rgb * attenuation * intensity;			// Calculate the radiance of the light source
@@ -163,7 +171,7 @@ void main()
 		float NdotL = max(dot(surfaceNormal, lightDirection), 0.0);
 
 		// Calculate the final output color by combining the diffuse and specular reflections
-		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+		Lo += (kD * diffuseColor / PI + specular) * radiance * NdotL;
 	}
 
 	// Calculate the specular reflection component
@@ -173,7 +181,7 @@ void main()
 	kD *= 1.0 - metallic;
 
 	// Calculate the ambient ligghting component
-	vec3 diffuse = diffuseLight * albedo;
+	vec3 diffuse = diffuseLight * diffuseColor;
 	vec3 ambient = (kD * diffuse) * ao;
 
 	// Accumulate the final color
@@ -184,7 +192,7 @@ void main()
 		color += emissive;
 	}
 
-	outColor = vec4(color, 1.0);
+	outColor = vec4(color, albedo.a);
 }
 
 //void main() 

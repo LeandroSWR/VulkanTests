@@ -343,7 +343,7 @@ namespace vt
                         }
 
                         material.pbr_parameters.alpha_cut_off = primitiveMaterial.alphaCutoff;
-                        material.pbr_parameters.alpha_mode = 0.f;//static_cast<float>(primitiveMaterial.alphaMode);
+                        material.pbr_parameters.alpha_mode = static_cast<float>(std::stof(primitiveMaterial.alphaMode));
                     }
                     else
                     {

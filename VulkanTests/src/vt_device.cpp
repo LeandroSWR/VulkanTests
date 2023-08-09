@@ -178,15 +178,49 @@ namespace vt
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        VkPhysicalDeviceFeatures deviceFeatures = {};
-        deviceFeatures.samplerAnisotropy = VK_TRUE;
+        // RayTracing:
+        VkPhysicalDeviceBufferDeviceAddressFeatures
+            physical_device_buffer_device_address_features = {
+                .sType =
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES,
+                .pNext = NULL,
+                .bufferDeviceAddress = VK_TRUE,
+                .bufferDeviceAddressCaptureReplay = VK_FALSE,
+                .bufferDeviceAddressMultiDevice = VK_FALSE };
+
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR
+            physical_device_acceleration_structure_features = {
+                .sType =
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR,
+                .pNext = &physical_device_buffer_device_address_features,
+                .accelerationStructure = VK_TRUE,
+                .accelerationStructureCaptureReplay = VK_FALSE,
+                .accelerationStructureIndirectBuild = VK_FALSE,
+                .accelerationStructureHostCommands = VK_FALSE,
+                .descriptorBindingAccelerationStructureUpdateAfterBind = VK_FALSE };
+
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR
+            physical_device_raytracing_pipeline_features = {
+                .sType =
+                    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR,
+                .pNext = &physical_device_acceleration_structure_features,
+                .rayTracingPipeline = VK_TRUE,
+                .rayTracingPipelineShaderGroupHandleCaptureReplay = VK_FALSE,
+                .rayTracingPipelineShaderGroupHandleCaptureReplayMixed = VK_FALSE,
+                .rayTracingPipelineTraceRaysIndirect = VK_FALSE,
+                .rayTraversalPrimitiveCulling = VK_FALSE };
+        VkPhysicalDeviceRayQueryFeaturesKHR physical_device_ray_query_features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR,
+            .pNext = &physical_device_raytracing_pipeline_features,
+            .rayQuery = VK_TRUE };
+
+        VkPhysicalDeviceFeatures deviceFeatures = { .geometryShader = VK_TRUE, .samplerAnisotropy = VK_TRUE };
 
         VkDeviceCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-
+        createInfo.pNext = &physical_device_ray_query_features;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-
         createInfo.pEnabledFeatures = &deviceFeatures;
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
@@ -207,6 +241,8 @@ namespace vt
         {
             throw std::runtime_error("failed to create logical device!");
         }
+
+
 
         vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
         vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);

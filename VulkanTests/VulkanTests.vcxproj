@@ -111,14 +111,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\json\single_include;C:\sdk\TinyGLTF;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests-SSR\VulkanTests\src;C:\Dev\glm;C:\Dev\GLFW\include;C:\VulkanSDK\1.3.231.1\Include;C:\Dev\MikkTSpace;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\json\single_include;C:\sdk\TinyGLTF;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests-SSR\VulkanTests\src;C:\Dev\glm;C:\Dev\GLFW\include;C:\VulkanSDK\1.3.250.1\Include;C:\Dev\MikkTSpace;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.231.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.250.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
@@ -146,7 +146,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\json\single_include;C:\sdk\TinyGLTF;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests-SSR\VulkanTests\src;C:\Dev\glm;C:\Dev\GLFW\include;C:\VulkanSDK\1.3.231.1\Include;C:\Dev\MikkTSpace;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\json\single_include;C:\sdk\TinyGLTF;C:\Users\GamingMachine\Desktop\Mestrado\Tese\VulkanTests-SSR\VulkanTests\src;C:\Dev\glm;C:\Dev\GLFW\include;C:\VulkanSDK\1.3.250.1\Include;C:\Dev\MikkTSpace;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard_C>Default</LanguageStandard_C>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
@@ -155,7 +155,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.231.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.250.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>

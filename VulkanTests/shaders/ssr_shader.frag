@@ -99,7 +99,7 @@ void main() {
 
 
 	outColor = vec4(lightingOutput.rgb, 1.0);
-	//This is one possible use of SSR, adapt these to your needs, this condition might not even be relevant
+	//This is one possible use of SSR
 	if(roughness < 0.1)
 	{
 		vec3 reflectionDirection = normalize(reflect( normalize(position), normalize(normal.xyz))); // Instead of position it should have position - cameraPosition, but cameraPosition is zero in view space. :/

@@ -1,5 +1,3 @@
-
-
 #include "vt_descriptors.hpp"
 #include "vt_device.hpp"
 #include "vt_utils.hpp"
@@ -65,8 +63,10 @@ namespace vt
                 }
             }
         }
+
         return Texture::USE_UNORM;
     }
+
     void VtModel::createVertexBuffers(const std::vector<Vertex>& vertices)
     {
         uint32_t vertexCount = static_cast<uint32_t>(vertices.size());

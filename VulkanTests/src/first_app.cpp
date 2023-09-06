@@ -156,12 +156,10 @@ namespace vt
 					auto& obj = kv.second;
 					if (obj.model == nullptr) continue;
 
-					
 					SimplePushConstantData push{};
 					push.modelMatrix = obj.transform.mat4();
 					push.normalMatrix = obj.transform.normalMatrix();
 					
-
 					vkCmdPushConstants(
 						frameInfo.commandBuffer,
 						gBufferPass->getPipelineLayout(),
@@ -173,10 +171,9 @@ namespace vt
 					obj.model->draw(frameInfo.commandBuffer, frameInfo.globalDescriptorSet, gBufferPass->getPipelineLayout());
 				}
 
-
 #ifdef RENDER_INDICATORS
 
-					pointLightSystem.render(frameInfo);
+				pointLightSystem.render(frameInfo);
 #endif
 
 				gBufferPass->endRenderPass(commandBuffer, imageIndex);
@@ -195,8 +192,6 @@ namespace vt
 				vkCmdDraw(commandBuffer, 6, 1, 0, 0); //Drawing the lit Texture + reflections
 				reflectionPass->endRenderPass(commandBuffer, imageIndex);
 
-
-
 				//Recreating swapchain sized objects
 				if (!vtRenderer.endFrame())
 				{
@@ -205,7 +200,6 @@ namespace vt
 					lightingPass->recreateSwapchain(vtRenderer.getSwapchain());
 
 					reflectionPass->recreateSwapchain(vtRenderer.getSwapchain());
-
 				}
 			}
 		}

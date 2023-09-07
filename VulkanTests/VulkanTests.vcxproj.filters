@@ -155,5 +155,7 @@
     <None Include="shaders\simple_shader.vert.spv" />
     <None Include="shaders\point_light.vert" />
     <None Include="shaders\point_light.frag" />
+    <None Include="shaders\raygen.rgen" />
+    <None Include="shaders\reflectionClosestHit.rchit" />
   </ItemGroup>
 </Project>

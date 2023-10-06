@@ -1,8 +1,8 @@
-//#include "RTSetup.hpp"
-//#include "nvvk/buffers_vk.hpp"
-//
-//
-//namespace vt {
+#include "RTSetup.hpp"
+#include "nvvk/buffers_vk.hpp"
+
+
+namespace vt {
 //
 //    RTSetup::RTSetup(VtModel& model, VtDevice& device, VtGameObject::Map& gameObjects, VtSwapChain& swapChain) : m_model(model), m_device(device), gameObjects(gameObjects), swapChain(swapChain) 
 //    {
@@ -166,4 +166,4 @@
 //        VkWriteDescriptorSet  wds = m_rtDescSetLayoutBind.makeWrite(m_rtDescSet, RtxBindings::eOutImage, &imageInfo);
 //        vkUpdateDescriptorSets(m_device.device(), 1, &wds, 0, nullptr);
 //    }
-//}
+}

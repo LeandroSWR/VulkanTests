@@ -89,13 +89,18 @@ namespace vt
 			globalSetLayout->getDescriptorSetLayout()
 		};
 
-		std::shared_ptr<VtModel> lveModel = std::make_shared<VtModel>(vtDevice, "models/Sponza/Sponza.gltf", *pbrMaterialSetLayout, *globalPool);
-		auto floor = VtGameObject::createGameObject();
-		floor.model = lveModel;
-		floor.transform.translation = { 0.f, 0.f, 0.f };
-		floor.transform.scale = { .01f, .01f, .01f };
-		floor.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
-		gameObjects.emplace(floor.getId(), std::move(floor));
+		VtModelManager modelManager(vtDevice, "models/Sponza/Sponza.gltf", *pbrMaterialSetLayout, *globalPool);
+		auto vtModels = modelManager.getModels();
+
+		for (const auto& vtModel : vtModels)
+		{
+			auto gameObject = VtGameObject::createGameObject();
+			gameObject.model = vtModel;
+			gameObject.transform.translation = { 0.f, 0.f, 0.f };
+			gameObject.transform.scale = { .01f, .01f, .01f };
+			gameObject.transform.rotation = { 0.0f, 0.0f, 0.0f };// 3.14159265f};
+			gameObjects.emplace(gameObject.getId(), std::move(gameObject));
+		}
 
         VtCamera camera{};
 

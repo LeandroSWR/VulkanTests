@@ -83,11 +83,23 @@ namespace vt {
 			}
 		};
 
-		VtModel(VtDevice& device, const std::string& filepath, VtDescriptorSetLayout& setLayout, VtDescriptorPool& pool);
+		VtModel(VtDevice& device, std::vector<std::shared_ptr<Texture>> images, const tinygltf::Model& model, const tinygltf::Primitive& GltfPrimitive, VtDescriptorSetLayout& materialSetLayout, VtDescriptorPool& descriptorPool);
 		~VtModel();
 
 		void bind(VkCommandBuffer commandBuffer);
 		void draw(VkCommandBuffer commandBuffer, VkDescriptorSet globalDescriptorSet, VkPipelineLayout pipelineLayout);
+		VkBuffer getVertexBuffer() {
+			return vertexBuffer->getBuffer();
+		}
+		VkBuffer getIndexBuffer() {
+			return indexBuffer->getBuffer();
+		}
+		uint32_t getnVertices() {
+			return vertices.size();
+		}
+		uint32_t getnIndices() {
+			return indices.size();
+		}
 
 	private:
 
@@ -101,10 +113,18 @@ namespace vt {
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Primitive> primitives;
-		std::vector<std::shared_ptr<Texture>> images;
 
 		bool hasIndexBuffer = false;
 		std::unique_ptr<VtBuffer> indexBuffer;
 		VtDevice& vtDevice;
+	};
+
+	class VtModelManager {
+	public:
+		VtModelManager(VtDevice& device, const std::string& filepath, VtDescriptorSetLayout& setLayout, VtDescriptorPool& pool);
+		const std::vector<std::shared_ptr<VtModel>>& getModels() const { return models; }
+
+	private:
+		std::vector<std::shared_ptr<VtModel>> models;
 	};
 }

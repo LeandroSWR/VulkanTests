@@ -79,6 +79,9 @@
     <ClCompile Include="src\render_passes\lighting_pass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\RTSetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\vt_window.hpp">
@@ -142,6 +145,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\render_passes\lighting_pass.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RTSetup.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

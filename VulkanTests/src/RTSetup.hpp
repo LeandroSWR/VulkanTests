@@ -1,11 +1,15 @@
 #pragma once
-#include "vt_swap_chain.hpp"
-#include "vt_game_object.hpp"
 
 // #VKRay
+#include "nvvk/debug_util_vk.hpp"
 #include "nvvk/descriptorsets_vk.hpp"
+#include "nvvk/memallocator_dma_vk.hpp"
+#include "nvvk/resourceallocator_vk.hpp"
 #include "host_device.h"
 #include "nvvk/raytraceKHR_vk.hpp"
+
+#include "vt_swap_chain.hpp"
+#include "vt_game_object.hpp"
 
 namespace vt {
 	class RTSetup
@@ -35,6 +39,7 @@ namespace vt {
 		VtModel& m_model;
 
 		nvvk::ResourceAllocatorDma m_alloc;
+		nvvk::ResourceAllocatorDedicated d_malloc;
 	};
 }
 

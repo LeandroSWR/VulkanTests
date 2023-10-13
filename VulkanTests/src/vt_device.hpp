@@ -92,6 +92,10 @@ namespace vt
 
         VkPhysicalDeviceProperties properties;
 
+        VkInstance getVulkanInstance() {
+            return instance;
+        }
+
     private:
         void createInstance();
         void setupDebugMessenger();

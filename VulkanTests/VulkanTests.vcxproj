@@ -119,7 +119,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.250.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;C:\Users\GamingMachine\Desktop\Ray_Tracing\bin_x64\Debug\nvpro_core_vk.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv
@@ -156,7 +156,7 @@ $(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\point_light.frag -o 
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\VulkanSDK\1.3.250.1\Lib;C:\Dev\GLFW\lib-vc2022;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;glfw3.lib;C:\Users\GamingMachine\Desktop\Ray_Tracing\bin_x64\Debug\nvpro_core_vk.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
       <Command>$(VK_SDK_PATH)\Bin\glslc $(MSBuildProjectDirectory)\shaders\simple_shader.vert -o $(MSBuildProjectDirectory)\shaders\simple_shader.vert.spv

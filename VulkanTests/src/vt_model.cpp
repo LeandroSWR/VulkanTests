@@ -85,7 +85,7 @@ namespace vt
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void*)vertices.data());
 
-        vertexBuffer = std::make_unique<VtBuffer>(
+        vertexBuffer = std::make_shared<VtBuffer>(
             vtDevice,
             vertexSize,
             vertexCount,
@@ -119,7 +119,7 @@ namespace vt
         stagingBuffer.map();
         stagingBuffer.writeToBuffer((void*)indices.data());
 
-        indexBuffer = std::make_unique<VtBuffer>(
+        indexBuffer = std::make_shared<VtBuffer>(
             vtDevice,
             indexSize,
             indexCount,

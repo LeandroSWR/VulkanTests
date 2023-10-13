@@ -7,6 +7,9 @@
 #include "vt_camera.hpp"
 #include "systems/point_light_system.hpp"
 #include "systems/simple_render_system.hpp"
+#include "RTSetup.hpp";
+
+#include "nvpsystem.hpp"
 
 // libs
 #define GLM_FORCE_RADIANS
@@ -21,6 +24,9 @@
 #include <stdexcept>
 
 //#define RENDER_INDICATORS
+
+// Default search path for shaders
+std::vector<std::string> defaultSearchPaths;
 
 namespace vt
 {
@@ -38,6 +44,13 @@ namespace vt
 
 	void FirstApp::run()
 	{
+		// Search path for shaders and other media
+		defaultSearchPaths = {
+			NVPSystem::exePath() + "../../",
+			NVPSystem::exePath() + "../../" "..",
+			std::string("VulkanTests"),
+		};
+
 		std::vector<std::unique_ptr<VtBuffer>> uboBuffers(VtSwapChain::MAX_FRAMES_IN_FLIGHT);
 		for (int i = 0; i < uboBuffers.size(); i++)
 		{
@@ -56,6 +69,12 @@ namespace vt
 			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
 			.build();
 
+		auto rtSetLayout = VtDescriptorSetLayout::Builder(vtDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_RAYGEN_BIT_KHR)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+			.addBinding(2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR)
+			.build();
+
 		auto pbrMaterialSetLayout =
 			VtDescriptorSetLayout::Builder(vtDevice)
 			.addBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_ALL_GRAPHICS)
@@ -66,7 +85,7 @@ namespace vt
 			.addBinding(5, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
 			.build();
 
-		std::vector<VkDescriptorSetLayout> layouts = { globalSetLayout->getDescriptorSetLayout(), pbrMaterialSetLayout->getDescriptorSetLayout()};
+		std::vector<VkDescriptorSetLayout> layouts = { globalSetLayout->getDescriptorSetLayout(), pbrMaterialSetLayout->getDescriptorSetLayout() };
 
 		//Initializing render passes
 		gBufferPass = std::make_shared<GBufferPass>(vtDevice, vtRenderer.getSwapchain(), layouts);
@@ -112,6 +131,17 @@ namespace vt
         KeyboardMovementController cameraController{};
 
         auto currentTime = std::chrono::high_resolution_clock::now();
+
+		// Create example
+		RTSetup helloVk(vtDevice, gameObjects, *vtRenderer.getSwapchain());
+
+		// #VKRAY
+		helloVk.initRayTracing();
+		helloVk.createBottomLevelAS();
+		//helloVk.createTopLevelAS();
+		//helloVk.createRtDescriptorSet();
+		//helloVk.createRtPipeline();
+		//helloVk.createRtShaderBindingTable();
 
 		while (!vtWindow.shouldClose())
 		{

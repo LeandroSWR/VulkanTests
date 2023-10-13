@@ -108,14 +108,14 @@ namespace vt {
 		void createVertexBuffers(const std::vector<Vertex>& vertices);
 		void createIndexBuffers(const std::vector<uint32_t>& indices);
 
-		std::unique_ptr<VtBuffer> vertexBuffer;
+		std::shared_ptr<VtBuffer> vertexBuffer;
 
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::vector<Primitive> primitives;
 
 		bool hasIndexBuffer = false;
-		std::unique_ptr<VtBuffer> indexBuffer;
+		std::shared_ptr<VtBuffer> indexBuffer;
 		VtDevice& vtDevice;
 	};
 

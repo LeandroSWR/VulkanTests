@@ -20,6 +20,8 @@
 #include <vector>
 #include <stdexcept>
 
+#include "nvvk/context_vk.hpp"
+
 namespace vt
 {
 
@@ -124,6 +126,8 @@ namespace vt
         VkSurfaceKHR surface_;
         VkQueue graphicsQueue_;
         VkQueue presentQueue_;
+
+        nvvk::Context vkctx{};
 
         const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
         const std::vector<const char*> deviceExtensions = { 
